@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Management Gantt Chart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gantt-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            max-width: 100%;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        .chart-container {
+            width: 100%;
+            height: 200px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="container mt-4">
+    <h2 class="mb-4 text-center">Fleet Transition to EVs (2025-2030)</h2>
+
+    <!-- Zoom Controls -->
+    <div class="text-center mb-3">
+        <button class="btn btn-primary me-2" onclick="changeView('Day')">Day</button>
+        <button class="btn btn-success me-2" onclick="changeView('Week')">Week</button>
+        <button class="btn btn-warning me-2" onclick="changeView('Month')">Month</button>
+        <button class="btn btn-danger" onclick="changeView('Year')">Year</button>
+    </div>
+
+    <div class="gantt-container">
+        <svg id="gantt"></svg>
+    </div>
+
+    <!-- Budget Chart -->
+    <canvas id="budgetChart" class="chart-container"></canvas>
+
+    <script>
+        // Fleet Purchase Information
+        const FIRE_APPLIANCE_COST = 350000;
+        const RESPONSE_CAR_COST = 40000;
+        const NUM_FIRE_APPLIANCES = 4;
+        const NUM_RESPONSE_CARS = 7;
+        const TASK_DURATION_MONTHS = 6; // Extend task duration for visibility
+
+        // Generate Fleet Transition Tasks (2025-2030)
+        let tasks = [];
+        let startYear = 2025;
+        let fleetPurchases = [];
+
+        for (let i = 1; i <= NUM_FIRE_APPLIANCES; i++) {
+            let purchaseDate = new Date(startYear, 0, 1); // January Purchase
+            let endDate = new Date(purchaseDate);
+            endDate.setMonth(endDate.getMonth() + TASK_DURATION_MONTHS); // Extend task duration to 6 months
+
+            tasks.push({
+                name: `Fire Appliance #${i} - EV Purchase`,
+                start: purchaseDate.toISOString().split('T')[0],
+                end: endDate.toISOString().split('T')[0],
+                id: `fa-${i}`,
+                cost: FIRE_APPLIANCE_COST
+            });
+
+            fleetPurchases.push({ date: purchaseDate, cost: FIRE_APPLIANCE_COST });
+            startYear += 1; // Purchase one fire appliance per year
+        }
+
+        startYear = 2025; // Reset for response cars
+
+        for (let i = 1; i <= NUM_RESPONSE_CARS; i++) {
+            let purchaseDate = new Date(startYear, 6, 1); // July Purchase
+            let endDate = new Date(purchaseDate);
+            endDate.setMonth(endDate.getMonth() + TASK_DURATION_MONTHS); // Extend task duration to 6 months
+
+            tasks.push({
+                name: `Response Car #${i} - EV Purchase`,
+                start: purchaseDate.toISOString().split('T')[0],
+                end: endDate.toISOString().split('T')[0],
+                id: `rc-${i}`,
+                cost: RESPONSE_CAR_COST
+            });
+
+            fleetPurchases.push({ date: purchaseDate, cost: RESPONSE_CAR_COST });
+            startYear += 1; // Purchase one response car per year
+        }
+
+        let gantt;
+
+        // Function to Initialize Gantt Chart (WITHOUT Progress Bars)
+        function renderGanttChart() {
+            document.getElementById("gantt").innerHTML = ""; // Clear previous Gantt chart
+            gantt = new Gantt("#gantt", tasks, {
+                view_mode: "Year",
+                date_format: "YYYY-MM-DD",
+                custom_popup_html: function(task) {
+                    return `
+                        <div style="padding:10px; background:white; border-radius:5px;">
+                            <h6>${task.name}</h6>
+                            <p><strong>Purchase Date:</strong> ${task.start}</p>
+                            <p><strong>Cost:</strong> £${task.cost.toLocaleString()}</p>
+                        </div>
+                    `;
+                }
+            });
+
+            // Remove Progress Bars by Setting Task Progress to 0 (Invisible)
+            gantt.tasks.forEach(task => {
+                task.progress = 0; 
+            });
+        }
+
+        // Function to Change View Mode
+        function changeView(mode) {
+            gantt.change_view_mode(mode);
+        }
+
+        // Function to Calculate Cumulative Budget Over Time
+        function calculateCumulativeBudget() {
+            fleetPurchases.sort((a, b) => a.date - b.date); // Sort by date
+
+            let labels = [];
+            let cumulativeCosts = [];
+            let total = 0;
+
+            fleetPurchases.forEach(purchase => {
+                let yearMonth = `${purchase.date.getFullYear()}-${(purchase.date.getMonth() + 1).toString().padStart(2, '0')}`;
+                labels.push(yearMonth);
+                total += purchase.cost;
+                cumulativeCosts.push(total);
+            });
+
+            return { labels, cumulativeCosts };
+        }
+
+        // Initialize Budget Chart
+        let budgetChart;
+
+        function renderBudgetChart() {
+            let { labels, cumulativeCosts } = calculateCumulativeBudget();
+            let ctx = document.getElementById("budgetChart").getContext("2d");
+            budgetChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Cumulative Fleet Cost (£)",
+                        data: cumulativeCosts,
+                        borderColor: "red",
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: 5,
+                        pointBackgroundColor: "red"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return `£${tooltipItem.raw.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: "Year-Month" } },
+                        y: { title: { display: true, text: "Cumulative Cost (£)" }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Render Gantt and Budget Chart on Load
+        renderGanttChart();
+        renderBudgetChart();
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
