@@ -1,0 +1,165 @@
+{
+    "stations": [
+        {
+            "name": "Herstmonceux Community Fire Station",
+            "coordinates": [
+                50.888988,
+                0.320674
+            ]
+        },
+        {
+            "name": "Newhaven Community Fire Station",
+            "coordinates": [
+                50.7902548,
+                0.051519
+            ]
+        },
+        {
+            "name": "Hove Community Fire Station",
+            "coordinates": [
+                50.8393894,
+                -0.1909319
+            ]
+        },
+        {
+            "name": "Wadhurst Community Fire Station",
+            "coordinates": [
+                51.0649431,
+                0.3349029
+            ]
+        },
+        {
+            "name": "Saxon House",
+            "coordinates": [
+                50.7932601,
+                0.0486409
+            ]
+        },
+        {
+            "name": "Bohemia Road Community Fire Station",
+            "coordinates": [
+                50.8596519,
+                0.5642854
+            ]
+        },
+        {
+            "name": "Preston Circus Fire Station",
+            "coordinates": [
+                50.8337096,
+                -0.1383135
+            ]
+        },
+        {
+            "name": "Crowborough Fire Station",
+            "coordinates": [
+                51.0600367,
+                0.1601734
+            ]
+        },
+        {
+            "name": "Mayfield Community Fire Station",
+            "coordinates": [
+                51.0230303,
+                0.2629803
+            ]
+        },
+        {
+            "name": "Heathfield Community Fire Station",
+            "coordinates": [
+                50.9700464,
+                0.2470945
+            ]
+        },
+        {
+            "name": "Uckfield Fire Station",
+            "coordinates": [
+                50.9699765,
+                0.0933196
+            ]
+        },
+        {
+            "name": "Bexhill Community Fire Station",
+            "coordinates": [
+                50.8452077,
+                0.4678649
+            ]
+        },
+        {
+            "name": "Battle Fire Station",
+            "coordinates": [
+                50.9185813,
+                0.4830752
+            ]
+        },
+        {
+            "name": "Hailsham Community Fire Station",
+            "coordinates": [
+                50.8614597,
+                0.2583666
+            ]
+        },
+        {
+            "name": "Barcombe Community Fire Station",
+            "coordinates": [
+                50.92286,
+                0.018672
+            ]
+        },
+        {
+            "name": "Forest Row Fire Station",
+            "coordinates": [
+                51.0988532,
+                0.0384837
+            ]
+        },
+        {
+            "name": "Seaford",
+            "coordinates": [
+                50.7825652,
+                0.1209629
+            ]
+        },
+        {
+            "name": "Broad Oak Brede Community Fire Station",
+            "coordinates": [
+                50.9494294,
+                0.5983519
+            ]
+        },
+        {
+            "name": "Eastbourne Fire Station",
+            "coordinates": [
+                50.7766505,
+                0.2910943
+            ]
+        },
+        {
+            "name": "Lewes Community Fire Station",
+            "coordinates": [
+                50.8773458,
+                0.0118162
+            ]
+        },
+        {
+            "name": "Roedean Community Fire Station",
+            "coordinates": [
+                50.8164854,
+                -0.1034436
+            ]
+        },
+        {
+            "name": "The Ridge Fire Station",
+            "coordinates": [
+                50.8760061,
+                0.6038248
+            ]
+        },
+        {
+            "name": "Burwash Community Fire Station",
+            "coordinates": [
+                51.0009181,
+                0.3887398
+            ]
+        }
+    ]
+}

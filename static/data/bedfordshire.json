@@ -1,0 +1,30 @@
+{
+    "stations": 
+    [
+        {
+            "name": "Dunstable Fire Station",
+   "coordinates": [51.8921266, -0.5347354]},
+  {"name": "Woburn Fire Station", "coordinates": [51.9857326, -0.6182477]},
+  {"name": "Community Fire Station Biggleswade",
+   "coordinates": [52.0879868, -0.2594587]},
+  {"name": "Ampthill Fire Station", "coordinates": [52.0265828, -0.4919951]},
+  {"name": "Bedford Fire Station", "coordinates": [52.1335301, -0.443088]},
+  {"name": "Building 72", "coordinates": [52.0702737, -0.6266941]},
+  {"name": "Leighton Buzzard Fire Station",
+   "coordinates": [51.9151243, -0.6605317]},
+  {"name": "Stopsley Fire Station", "coordinates": [51.9009378, -0.396056]},
+  {"name": "Toddingtion Community Fire Station",
+   "coordinates": [51.9424333, -0.5346979]},
+  {"name": "Community Fire Station Sandy",
+   "coordinates": [52.1264575, -0.2851135]},
+  {"name": "Harrold Fire Station", "coordinates": [52.204683, -0.6037791]},
+  {"name": "Luton Airport Fire Station",
+   "coordinates": [51.8759117, -0.3758416]},
+  {"name": "Kempston Fire Station", "coordinates": [52.1145682, -0.4802958]},
+  {"name": "Community Fire Station Luton",
+   "coordinates": [51.8882913, -0.4222893]},
+  {"name": "Community Fire Station Potton",
+   "coordinates": [52.1259404, -0.2113522]},
+  {"name": "Community Fire Station Shefford",
+   "coordinates": [52.0374361, -0.3314901]},
+  {"name": "Unknown Station", "coordinates": [52.1155913, -0.4799705]}]}
