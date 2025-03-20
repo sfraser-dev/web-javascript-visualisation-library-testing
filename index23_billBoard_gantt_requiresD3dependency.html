@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Transition Budget (Billboard.js)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/billboard.js/dist/billboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script> <!-- Billboard.js Requires D3 -->
+    <script src="https://cdn.jsdelivr.net/npm/billboard.js/dist/billboard.min.js"></script>
+    <style>
+        .chart-container {
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+            text-align: center;
+        }
+        .gantt-container {
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        .gantt-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+        }
+        .gantt-label {
+            width: 200px;
+            font-weight: bold;
+            text-align: left;
+            padding: 5px;
+        }
+        .gantt-bar {
+            height: 25px;
+            line-height: 25px;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+        .fire { background-color: red; }
+        .response { background-color: blue; }
+    </style>
+</head>
+<body class="container my-4">
+
+    <h2 class="text-center mb-4">Fleet Transition Budget (2026-2030)</h2>
+
+    <!-- Gantt Chart Section -->
+    <div class="gantt-container">
+        <div id="ganttChart">
+            <!-- Dynamic Data Will Be Inserted Here -->
+        </div>
+    </div>
+
+    <h3 class="text-center mt-5">Cumulative Cost Over Time</h3>
+    <div class="chart-container">
+        <div id="cumulativeCostChart"></div>
+    </div>
+
+    <h3 class="text-center mt-5">Yearly Spending</h3>
+    <div class="chart-container">
+        <div id="yearlySpendingChart"></div>
+    </div>
+
+    <script>
+        // Fleet transition data
+        const fleetData = [
+            { vehicle: "Fire Appliance #1", year: 2026, cost: 350000, type: "fire", duration: 1 },
+            { vehicle: "Response Car #1", year: 2026, cost: 40000, type: "response", duration: 1 },
+            { vehicle: "Response Car #2", year: 2027, cost: 40000, type: "response", duration: 1 },
+            { vehicle: "Fire Appliance #2", year: 2027, cost: 350000, type: "fire", duration: 2 },
+            { vehicle: "Response Car #3", year: 2028, cost: 40000, type: "response", duration: 1 },
+            { vehicle: "Fire Appliance #3", year: 2028, cost: 350000, type: "fire", duration: 2 },
+            { vehicle: "Response Car #4", year: 2029, cost: 40000, type: "response", duration: 1 },
+            { vehicle: "Response Car #5", year: 2029, cost: 40000, type: "response", duration: 1 },
+            { vehicle: "Fire Appliance #4", year: 2029, cost: 350000, type: "fire", duration: 2 },
+            { vehicle: "Response Car #6", year: 2030, cost: 40000, type: "response", duration: 1 },
+            { vehicle: "Response Car #7", year: 2030, cost: 40000, type: "response", duration: 1 }
+        ];
+
+        function generateGanttChart() {
+            let ganttContainer = document.getElementById("ganttChart");
+            ganttContainer.innerHTML = "";
+
+            const minYear = 2026;
+            const maxYear = 2030;
+            const totalYears = maxYear - minYear + 1;
+
+            fleetData.forEach(({ vehicle, year, type, duration }) => {
+                const startOffset = (year - minYear) / totalYears * 100;
+                const barWidth = (duration / totalYears) * 100;
+
+                let ganttRow = document.createElement("div");
+                ganttRow.classList.add("gantt-row");
+
+                let label = document.createElement("div");
+                label.classList.add("gantt-label");
+                label.textContent = vehicle;
+
+                let barContainer = document.createElement("div");
+                barContainer.style.width = "100%";
+                barContainer.style.position = "relative";
+
+                let bar = document.createElement("div");
+                bar.classList.add("gantt-bar", type);
+                bar.textContent = `${year}`;
+                bar.style.width = `${barWidth}%`;
+                bar.style.marginLeft = `${startOffset}%`;
+
+                barContainer.appendChild(bar);
+                ganttRow.appendChild(label);
+                ganttRow.appendChild(barContainer);
+                ganttContainer.appendChild(ganttRow);
+            });
+        }
+
+        function renderCharts() {
+            let cumulativeCost = 0;
+            let yearlyCost = {};
+            let cumulativeCostData = ["Cumulative Cost"];
+            let yearlySpendingData = ["Yearly Spending"];
+            let years = ["x"];
+
+            fleetData.forEach(({ year, cost }) => {
+                yearlyCost[year] = (yearlyCost[year] || 0) + cost;
+            });
+
+            Object.keys(yearlyCost).map(Number).sort().forEach(year => {
+                cumulativeCost += yearlyCost[year];
+                years.push(year);
+                cumulativeCostData.push(cumulativeCost);
+                yearlySpendingData.push(yearlyCost[year]);
+            });
+
+            // Billboard.js Cumulative Cost Chart (Larger Axis Font)
+            bb.generate({
+                bindto: "#cumulativeCostChart",
+                data: {
+                    x: "x",
+                    columns: [years, cumulativeCostData],
+                    type: "line",
+                    colors: { "Cumulative Cost": "red" }
+                },
+                axis: {
+                    x: {
+                        label: { text: "Year", position: "outer-center" },
+                        type: "category",
+                        tick: { fit: true, format: d3.format("d"), size: 20 }
+                    },
+                    y: {
+                        label: { text: "Total Cost (£)", position: "outer-middle" },
+                        tick: { format: x => `£${x.toLocaleString()}`, size: 20 }
+                    }
+                }
+            });
+
+            // Billboard.js Yearly Spending Chart (Larger Axis Font)
+            bb.generate({
+                bindto: "#yearlySpendingChart",
+                data: {
+                    x: "x",
+                    columns: [years, yearlySpendingData],
+                    type: "bar",
+                    colors: { "Yearly Spending": "blue" }
+                },
+                axis: {
+                    x: {
+                        label: { text: "Year", position: "outer-center" },
+                        type: "category",
+                        tick: { fit: true, format: d3.format("d"), size: 20 }
+                    },
+                    y: {
+                        label: { text: "Yearly Cost (£)", position: "outer-middle" },
+                        tick: { format: x => `£${x.toLocaleString()}`, size: 20 }
+                    }
+                }
+            });
+        }
+
+        // Initialize UI
+        generateGanttChart();
+        renderCharts();
+    </script>
+
+</body>
+</html>
