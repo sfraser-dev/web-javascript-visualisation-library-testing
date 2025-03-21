@@ -12,10 +12,10 @@ const fleetData = [
     { vehicle: "Response Car #7", year: 2030, cost: 40000 },
 ];
 
-// Sort by year
+// Sort by transition year
 fleetData.sort((a, b) => a.year - b.year);
 
-// Group: each vehicle gets its own row, plus 1 for cumulative cost
+// Create groups (1 per vehicle + 1 for cumulative cost)
 const groups = new vis.DataSet(
     fleetData.map((item, index) => ({
         id: index + 1,
@@ -23,7 +23,7 @@ const groups = new vis.DataSet(
     })).concat([{ id: "cumulative", content: "Cumulative Cost" }])
 );
 
-// Items: vehicle transitions + cumulative cost bars
+// Create items (timeline bars)
 let cumulative = 0;
 const items = new vis.DataSet(
     fleetData.map((item, index) => {
@@ -63,7 +63,7 @@ const items = new vis.DataSet(
     )
 );
 
-// Timeline options
+// Timeline options with Metronic-style template
 const options = {
     stack: false,
     showCurrentTime: false,
@@ -75,21 +75,21 @@ const options = {
         else if (item.className.includes("primary")) color = "primary";
 
         return `
-        <div class="rounded-pill bg-light-${color} d-flex align-items-center h-40px w-100 p-2 overflow-hidden">
-            <div class="position-absolute rounded-pill d-block bg-${color} start-0 top-0 h-100 z-index-1" style="width: 100%; opacity: 0.3;"></div>
+        <div class="rounded-pill bg-light-${color} d-flex align-items-center h-40px w-100 px-4 py-2 overflow-hidden position-relative shadow-sm gantt-bar">
+            <div class="position-absolute bg-${color} start-0 top-0 h-100 z-index-1 opacity-25 rounded-pill" style="width: 100%;"></div>
             <div class="d-flex align-items-center position-relative z-index-2 w-100 justify-content-between">
                 ${
                     item.title.includes("<br>")
-                    ? `<span class="fw-semibold text-${color}">${item.title.split("<br>")[0]}</span>
-                       <span class="badge badge-light-${color}">${item.title.split("<br>")[1]}</span>`
-                    : `<span class="fw-semibold text-${color}">${item.title}</span>`
+                        ? `<span class="fw-semibold text-${color}">${item.title.split("<br>")[0]}</span>
+                           <span class="badge badge-light-${color}">${item.title.split("<br>")[1]}</span>`
+                        : `<span class="fw-semibold text-${color}">${item.title}</span>`
                 }
             </div>
         </div>`;
     }
 };
 
-// Create the timeline
+// Render the timeline
 new vis.Timeline(
     document.getElementById("timeline"),
     items,
