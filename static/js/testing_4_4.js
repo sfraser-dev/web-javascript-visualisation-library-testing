@@ -52,7 +52,9 @@ am5.ready(function () {
             tooltip: am5.Tooltip.new(root, {})
         })
     );
-    yAxis.data.setAll(data);
+    yAxis.data.setAll(
+        data.map(item => ({ category: item.category }))
+    );
 
     var xAxis = chart.xAxes.push(
         am5xy.DateAxis.new(root, {
