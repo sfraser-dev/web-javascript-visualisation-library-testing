@@ -1,80 +1,141 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>EV Fleet Transition Timeline</title>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.0/vis-timeline-graph2d.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.0/vis-timeline-graph2d.min.css" rel="stylesheet" type="text/css" />
-  <link href="./static/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
-  <link href="./static/css/style.bundle.css" rel="stylesheet" type="text/css" />
-  <style>
-    #timeline {
-      width: 100%;
-      height: 700px;
-      border: 1px solid lightgray;
-    }
-  </style>
-</head>
-<body>
-  <h2>EV Fleet Transition Timeline (Vehicle-Level Gantt)</h2>
-  <div id="timeline"></div>
+    <head>
+        <title>EV Fleet Transition Timeline</title>
+        <script
+            type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.0/vis-timeline-graph2d.min.js"
+        ></script>
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.0/vis-timeline-graph2d.min.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="./static/plugins/global/plugins.bundle.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link
+            href="./static/css/style.bundle.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <style>
+            #timeline {
+                width: 100%;
+                height: 700px;
+                border: 1px solid lightgray;
+                margin-bottom: 50px;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>EV Fleet Transition Timeline (Gantt with Cumulative Cost Track)</h2>
+        <div id="timeline"></div>
 
-  <script>
-    const fleetData = [
-      { vehicle: "Fire Appliance #1", year: 2026, cost: 350000 },
-      { vehicle: "Response Car #1", year: 2026, cost: 40000 },
-      { vehicle: "Response Car #2", year: 2027, cost: 40000 },
-      { vehicle: "Fire Appliance #2", year: 2027, cost: 350000 },
-      { vehicle: "Response Car #3", year: 2028, cost: 40000 },
-      { vehicle: "Fire Appliance #3", year: 2028, cost: 350000 },
-      { vehicle: "Response Car #4", year: 2029, cost: 40000 },
-      { vehicle: "Response Car #5", year: 2029, cost: 40000 },
-      { vehicle: "Fire Appliance #4", year: 2029, cost: 350000 },
-      { vehicle: "Response Car #6", year: 2030, cost: 40000 },
-      { vehicle: "Response Car #7", year: 2030, cost: 40000 }
-    ];
+        <script>
+            const fleetData = [
+                { vehicle: "Fire Appliance #1", year: 2026, cost: 350000 },
+                { vehicle: "Response Car #1", year: 2026, cost: 40000 },
+                { vehicle: "Response Car #2", year: 2027, cost: 40000 },
+                { vehicle: "Fire Appliance #2", year: 2027, cost: 350000 },
+                { vehicle: "Response Car #3", year: 2028, cost: 40000 },
+                { vehicle: "Fire Appliance #3", year: 2028, cost: 350000 },
+                { vehicle: "Response Car #4", year: 2029, cost: 40000 },
+                { vehicle: "Response Car #5", year: 2029, cost: 40000 },
+                { vehicle: "Fire Appliance #4", year: 2029, cost: 350000 },
+                { vehicle: "Response Car #6", year: 2030, cost: 40000 },
+                { vehicle: "Response Car #7", year: 2030, cost: 40000 },
+            ];
 
-    // Sort fleetData by year
-    fleetData.sort((a, b) => a.year - b.year);
+            // Sort fleetData by year
+            fleetData.sort((a, b) => a.year - b.year);
 
-    const groups = new vis.DataSet(
-      fleetData.map((item, index) => ({
-        id: index + 1,
-        content: item.vehicle
-      }))
-    );
+            const groups = new vis.DataSet(
+                fleetData
+                    .map((item, index) => ({
+                        id: index + 1,
+                        content: item.vehicle,
+                    }))
+                    .concat([{ id: "cumulative", content: "Cumulative Cost" }])
+            );
 
-    const items = new vis.DataSet(
-      fleetData.map((item, index) => ({
-        id: index + 1,
-        content: `£${item.cost.toLocaleString()}`,
-        start: `${item.year}-01-01`,
-        end: `${item.year + 1}-01-01`,
-        group: index + 1,
-        title: `${item.vehicle}<br>£${item.cost.toLocaleString()}`,
-        className: item.vehicle.includes("Fire") ? 'bg-danger' : 'bg-primary'
-      }))
-    );
+            let cumulative = 0;
+            const items = new vis.DataSet(
+                fleetData
+                    .map((item, index) => {
+                        cumulative += item.cost;
+                        return {
+                            id: index + 1,
+                            content: `£${item.cost.toLocaleString()}`,
+                            start: `${item.year}-01-01`,
+                            end: `${item.year + 1}-01-01`,
+                            group: index + 1,
+                            title: `${
+                                item.vehicle
+                            }<br>£${item.cost.toLocaleString()}`,
+                            className: item.vehicle.includes("Fire")
+                                ? "bg-danger"
+                                : "bg-primary",
+                        };
+                    })
+                    .concat(
+                        fleetData.map((item, index) => {
+                            const start = new Date(item.year, 0, 1);
+                            const end = new Date(item.year + 1, 0, 1);
+                            const cumulativeValue = fleetData
+                                .slice(0, index + 1)
+                                .reduce((acc, val) => acc + val.cost, 0);
+                            return {
+                                id: "cumulative-" + (index + 1),
+                                content: `£${cumulativeValue.toLocaleString()}`,
+                                start: start,
+                                end: end,
+                                group: "cumulative",
+                                title: `Cumulative: £${cumulativeValue.toLocaleString()}`,
+                                className: "bg-success",
+                            };
+                        })
+                    )
+            );
 
-    const options = {
-      stack: false,
-      showCurrentTime: false,
-      margin: { item: 10, axis: 5 },
-      orientation: 'bottom',
-      template: function (item) {
-        const color = item.className.includes("danger") ? "danger" : "primary";
-        return `
+            const options = {
+                stack: false,
+                showCurrentTime: false,
+                margin: { item: 10, axis: 5 },
+                orientation: "bottom",
+                template: function (item) {
+                    let color = "success";
+                    if (item.className.includes("danger")) color = "danger";
+                    else if (item.className.includes("primary"))
+                        color = "primary";
+                    return `
           <div class="rounded-pill bg-light-${color} d-flex align-items-center h-40px w-100 p-2 overflow-hidden">
             <div class="position-absolute rounded-pill d-block bg-${color} start-0 top-0 h-100 z-index-1" style="width: 100%; opacity: 0.3;"></div>
             <div class="d-flex align-items-center position-relative z-index-2 w-100 justify-content-between">
-              <span class="fw-semibold text-${color}">${item.title.split('<br>')[0]}</span>
-              <span class="badge badge-light-${color}">${item.title.split('<br>')[1]}</span>
+              ${
+                  item.title.includes("<br>")
+                      ? `<span class="fw-semibold text-${color}">${
+                            item.title.split("<br>")[0]
+                        }</span>
+     <span class="badge badge-light-${color}">${
+                            item.title.split("<br>")[1]
+                        }</span>`
+                      : `<span class="fw-semibold text-${color}">${item.title}</span>`
+              }
             </div>
           </div>
         `;
-      }
-    };
+                },
+            };
 
-    new vis.Timeline(document.getElementById('timeline'), items, groups, options);
-  </script>
-</body>
+            new vis.Timeline(
+                document.getElementById("timeline"),
+                items,
+                groups,
+                options
+            );
+        </script>
+    </body>
 </html>
