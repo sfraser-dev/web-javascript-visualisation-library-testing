@@ -1,3 +1,4 @@
-# JavaScript Visualisation Library Testing
+# Visualisation Testing
 
-Using various libraries to display "dummy data" using tables, gantt charts, line charts and bar charts.
+Using various JavaScript libraries to display "dummy data" using tables, gantt charts, line charts and bar charts.
+
