@@ -56,46 +56,39 @@
     </div>
 
     <script>
-        // Fleet transition data
-        const fleetData = [
-            { vehicle: "Fire Appliance #1", year: 2026, cost: 350000, type: "fire", duration: 1 },
-            { vehicle: "Response Car #1", year: 2026, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Response Car #2", year: 2027, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Fire Appliance #2", year: 2027, cost: 350000, type: "fire", duration: 2 },
-            { vehicle: "Response Car #3", year: 2028, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Fire Appliance #3", year: 2028, cost: 350000, type: "fire", duration: 2 },
-            { vehicle: "Response Car #4", year: 2029, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Response Car #5", year: 2029, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Fire Appliance #4", year: 2029, cost: 350000, type: "fire", duration: 2 },
-            { vehicle: "Response Car #6", year: 2030, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Response Car #7", year: 2030, cost: 40000, type: "response", duration: 1 }
-        ];
-
-        function prepareChartData() {
+        async function loadFleetData() {
+            const response = await fetch('fleetData.json');
+            if (!response.ok) {
+                console.error("Failed to load fleet data");
+                return [];
+            }
+            return await response.json();
+        }
+    
+        function prepareChartData(fleetData) {
             let cumulativeCost = 0;
             let yearlyCost = {};
             let years = [];
             let cumulativeCostData = [];
             let yearlySpendingData = [];
-
+    
             fleetData.forEach(({ year, cost }) => {
                 yearlyCost[year] = (yearlyCost[year] || 0) + cost;
             });
-
+    
             Object.keys(yearlyCost).map(Number).sort().forEach(year => {
                 cumulativeCost += yearlyCost[year];
                 years.push(year);
                 cumulativeCostData.push(cumulativeCost);
                 yearlySpendingData.push(yearlyCost[year]);
             });
-
+    
             return { years, cumulativeCostData, yearlySpendingData };
         }
-
-        function renderCharts() {
-            const { years, cumulativeCostData, yearlySpendingData } = prepareChartData();
-
-            // Cumulative Cost Chart
+    
+        function renderCharts(fleetData) {
+            const { years, cumulativeCostData, yearlySpendingData } = prepareChartData(fleetData);
+    
             new ApexCharts(document.querySelector("#cumulativeCostChart"), {
                 chart: { type: 'line', height: 500 },
                 series: [{ name: "Cumulative Cost", data: cumulativeCostData }],
@@ -103,8 +96,7 @@
                 yaxis: { labels: { formatter: value => `£${value.toLocaleString()}`, style: { fontSize: '16px' } } },
                 colors: ['red']
             }).render();
-
-            // Yearly Spending Chart
+    
             new ApexCharts(document.querySelector("#yearlySpendingChart"), {
                 chart: { type: 'bar', height: 500 },
                 series: [{ name: "Yearly Spending", data: yearlySpendingData }],
@@ -113,41 +105,45 @@
                 colors: ['blue']
             }).render();
         }
-
-        function generateGanttChart() {
-            let tasks = fleetData.map(({ vehicle, year, duration, type, cost }) => {
-                let start = `${year}-01-01`;
-                let end = `${year + duration - 1}-12-31`;
+    
+        function generateGanttChart(fleetData) {
+            const tasks = fleetData.map(({ vehicle, year, type, cost }) => {
+                const duration = type === 'fire' ? 2 : 1;
+                const start = `${year}-01-01`;
+                const end = `${year + duration - 1}-12-31`;
                 return {
                     id: vehicle.replace(/\s+/g, '-'),
                     name: `${vehicle} (£${cost.toLocaleString()})`,
                     start: start,
                     end: end,
-                    progress: 100, // Fully completed for now
+                    progress: 100,
                     custom_class: type
                 };
             });
-
-            let gantt = new Gantt("#gantt", tasks, {
+    
+            const gantt = new Gantt("#gantt", tasks, {
                 view_mode: 'Year',
                 date_format: 'YYYY-MM-DD',
                 bar_height: 30,
                 padding: 50
             });
-
-            // Apply custom colors
+    
             setTimeout(() => {
                 document.querySelectorAll('.fire .bar').forEach(bar => bar.style.fill = 'red');
                 document.querySelectorAll('.response .bar').forEach(bar => bar.style.fill = 'blue');
             }, 500);
-
-            // Render charts after Gantt
-            renderCharts();
+    
+            renderCharts(fleetData);
         }
-
-        // Initialize the UI
-        generateGanttChart();
+    
+        // Load fleet data and initialize everything
+        loadFleetData().then(fleetData => {
+            if (fleetData.length) {
+                generateGanttChart(fleetData);
+            }
+        });
     </script>
+
 
 </body>
 </html>

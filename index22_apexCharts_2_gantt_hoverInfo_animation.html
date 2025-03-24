@@ -24,7 +24,6 @@
         .chart {
             height: 500px;
         }
-        /* Gantt Chart Style */
         .gantt-container {
             width: 100%;
             max-width: 900px;
@@ -63,10 +62,8 @@
 
     <h2 class="text-center mb-4">Fleet Transition Gantt Chart (2026-2030)</h2>
 
-    <!-- Gantt Chart Section -->
     <div class="gantt-container">
         <div id="ganttChart">
-            <!-- Dynamic Data Will Be Inserted Here -->
         </div>
     </div>
 
@@ -81,107 +78,92 @@
     </div>
 
     <script>
-        // Fleet transition data
-        const fleetData = [
-            { vehicle: "Fire Appliance #1", year: 2026, cost: 350000, type: "fire", duration: 1 },
-            { vehicle: "Response Car #1", year: 2026, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Response Car #2", year: 2027, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Fire Appliance #2", year: 2027, cost: 350000, type: "fire", duration: 2 },
-            { vehicle: "Response Car #3", year: 2028, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Fire Appliance #3", year: 2028, cost: 350000, type: "fire", duration: 2 },
-            { vehicle: "Response Car #4", year: 2029, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Response Car #5", year: 2029, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Fire Appliance #4", year: 2029, cost: 350000, type: "fire", duration: 2 },
-            { vehicle: "Response Car #6", year: 2030, cost: 40000, type: "response", duration: 1 },
-            { vehicle: "Response Car #7", year: 2030, cost: 40000, type: "response", duration: 1 }
-        ];
+        fetch('fleetData.json')
+            .then(response => response.json())
+            .then(fleetData => {
 
-        function prepareChartData() {
-            let cumulativeCost = 0;
-            let yearlyCost = {};
-            let years = [];
-            let cumulativeCostData = [];
-            let yearlySpendingData = [];
+                function prepareChartData() {
+                    let cumulativeCost = 0;
+                    let yearlyCost = {};
+                    let years = [];
+                    let cumulativeCostData = [];
+                    let yearlySpendingData = [];
 
-            fleetData.forEach(({ year, cost }) => {
-                yearlyCost[year] = (yearlyCost[year] || 0) + cost;
-            });
+                    fleetData.forEach(({ year, cost }) => {
+                        yearlyCost[year] = (yearlyCost[year] || 0) + cost;
+                    });
 
-            Object.keys(yearlyCost).map(Number).sort().forEach(year => {
-                cumulativeCost += yearlyCost[year];
-                years.push(year);
-                cumulativeCostData.push(cumulativeCost);
-                yearlySpendingData.push(yearlyCost[year]);
-            });
+                    Object.keys(yearlyCost).map(Number).sort().forEach(year => {
+                        cumulativeCost += yearlyCost[year];
+                        years.push(year);
+                        cumulativeCostData.push(cumulativeCost);
+                        yearlySpendingData.push(yearlyCost[year]);
+                    });
 
-            return { years, cumulativeCostData, yearlySpendingData };
-        }
+                    return { years, cumulativeCostData, yearlySpendingData };
+                }
 
-        function renderCharts() {
-            const { years, cumulativeCostData, yearlySpendingData } = prepareChartData();
+                function renderCharts() {
+                    const { years, cumulativeCostData, yearlySpendingData } = prepareChartData();
 
-            // Cumulative Cost Chart
-            var optionsCumulative = {
-                chart: { type: 'line', height: 500 },
-                series: [{ name: "Cumulative Cost", data: cumulativeCostData }],
-                xaxis: { categories: years, labels: { style: { fontSize: '14px' } } },
-                yaxis: { labels: { formatter: value => `£${value.toLocaleString()}`, style: { fontSize: '14px' } } },
-                colors: ['red']
-            };
-            new ApexCharts(document.querySelector("#cumulativeCostChart"), optionsCumulative).render();
+                    var optionsCumulative = {
+                        chart: { type: 'line', height: 500 },
+                        series: [{ name: "Cumulative Cost", data: cumulativeCostData }],
+                        xaxis: { categories: years, labels: { style: { fontSize: '14px' } } },
+                        yaxis: { labels: { formatter: value => `£${value.toLocaleString()}`, style: { fontSize: '14px' } } },
+                        colors: ['red']
+                    };
+                    new ApexCharts(document.querySelector("#cumulativeCostChart"), optionsCumulative).render();
 
-            // Yearly Spending Chart
-            var optionsYearly = {
-                chart: { type: 'bar', height: 500 },
-                series: [{ name: "Yearly Spending", data: yearlySpendingData }],
-                xaxis: { categories: years, labels: { style: { fontSize: '14px' } } },
-                yaxis: { labels: { formatter: value => `£${value.toLocaleString()}`, style: { fontSize: '14px' } } },
-                colors: ['blue']
-            };
-            new ApexCharts(document.querySelector("#yearlySpendingChart"), optionsYearly).render();
-        }
+                    var optionsYearly = {
+                        chart: { type: 'bar', height: 500 },
+                        series: [{ name: "Yearly Spending", data: yearlySpendingData }],
+                        xaxis: { categories: years, labels: { style: { fontSize: '14px' } } },
+                        yaxis: { labels: { formatter: value => `£${value.toLocaleString()}`, style: { fontSize: '14px' } } },
+                        colors: ['blue']
+                    };
+                    new ApexCharts(document.querySelector("#yearlySpendingChart"), optionsYearly).render();
+                }
 
-        function generateGanttChart() {
-            let ganttContainer = document.getElementById("ganttChart");
-            ganttContainer.innerHTML = "";
+                function generateGanttChart() {
+                    let ganttContainer = document.getElementById("ganttChart");
+                    ganttContainer.innerHTML = "";
 
-            const minYear = 2026;
-            const maxYear = 2030;
-            const totalYears = maxYear - minYear + 1;
+                    const minYear = 2026;
+                    const maxYear = 2030;
+                    const totalYears = maxYear - minYear + 1;
 
-            fleetData.forEach(({ vehicle, year, type, duration }) => {
-                const startOffset = (year - minYear) / totalYears * 100;
-                const barWidth = (duration / totalYears) * 100;
-                
-                let ganttRow = document.createElement("div");
-                ganttRow.classList.add("gantt-row");
+                    fleetData.forEach(({ vehicle, year, type, duration }) => {
+                        const startOffset = (year - minYear) / totalYears * 100;
+                        const barWidth = (duration / totalYears) * 100;
 
-                let label = document.createElement("div");
-                label.classList.add("gantt-label");
-                label.textContent = vehicle;
+                        let ganttRow = document.createElement("div");
+                        ganttRow.classList.add("gantt-row");
 
-                let barContainer = document.createElement("div");
-                barContainer.style.width = "100%";
+                        let label = document.createElement("div");
+                        label.classList.add("gantt-label");
+                        label.textContent = vehicle;
 
-                let bar = document.createElement("div");
-                bar.classList.add("gantt-bar", type);
-                bar.textContent = `${year}`;
-                bar.style.width = `${barWidth}%`;
-                bar.style.marginLeft = `${startOffset}%`;
+                        let barContainer = document.createElement("div");
+                        barContainer.style.width = "100%";
 
-                barContainer.appendChild(bar);
-                ganttRow.appendChild(label);
-                ganttRow.appendChild(barContainer);
-                ganttContainer.appendChild(ganttRow);
-            });
+                        let bar = document.createElement("div");
+                        bar.classList.add("gantt-bar", type);
+                        bar.textContent = `${year}`;
+                        bar.style.width = `${barWidth}%`;
+                        bar.style.marginLeft = `${startOffset}%`;
 
-            // Ensure charts are rendered AFTER Gantt chart loads
-            renderCharts();
-        }
+                        barContainer.appendChild(bar);
+                        ganttRow.appendChild(label);
+                        ganttRow.appendChild(barContainer);
+                        ganttContainer.appendChild(ganttRow);
+                    });
+                    renderCharts();
+                }
 
-        // Initialize the UI
-        generateGanttChart();
+                generateGanttChart();
+            })
+            .catch(error => console.error('Error fetching fleet data:', error));
     </script>
-
 </body>
 </html>

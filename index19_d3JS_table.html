@@ -37,7 +37,6 @@
 
     <h2 class="text-center mb-4">Fleet Transition Budget (2026-2030)</h2>
 
-    <!-- Fleet Transition Table -->
     <div class="table-responsive">
         <table class="table table-bordered fleet-table">
             <thead class="table-dark">
@@ -48,12 +47,10 @@
                 </tr>
             </thead>
             <tbody id="fleetTableBody">
-                <!-- Dynamic Data Will Be Inserted Here -->
             </tbody>
         </table>
     </div>
 
-    <!-- Charts Section -->
     <h3 class="text-center mt-5">Cumulative Cost Over Time</h3>
     <div class="chart-container">
         <svg id="cumulativeCostChart" width="900" height="500"></svg>
@@ -65,101 +62,87 @@
     </div>
 
     <script>
-        // Fleet transition data
-        const fleetData = [
-            { vehicle: "Fire Appliance #1", year: 2026, cost: 350000, type: "fire" },
-            { vehicle: "Response Car #1", year: 2026, cost: 40000, type: "response" },
-            { vehicle: "Response Car #2", year: 2027, cost: 40000, type: "response" },
-            { vehicle: "Fire Appliance #2", year: 2027, cost: 350000, type: "fire" },
-            { vehicle: "Response Car #3", year: 2028, cost: 40000, type: "response" },
-            { vehicle: "Fire Appliance #3", year: 2028, cost: 350000, type: "fire" },
-            { vehicle: "Response Car #4", year: 2029, cost: 40000, type: "response" },
-            { vehicle: "Response Car #5", year: 2029, cost: 40000, type: "response" },
-            { vehicle: "Fire Appliance #4", year: 2029, cost: 350000, type: "fire" },
-            { vehicle: "Response Car #6", year: 2030, cost: 40000, type: "response" },
-            { vehicle: "Response Car #7", year: 2030, cost: 40000, type: "response" }
-        ];
+        fetch('fleetData.json')
+            .then(response => response.json())
+            .then(fleetData => {
+                const rowColors = { fire: "table-danger", response: "table-info" };
 
-        // Color mapping for table rows
-        const rowColors = { fire: "table-danger", response: "table-info" };
+                function generateFleetTable() {
+                    let tableBody = document.getElementById("fleetTableBody");
+                    tableBody.innerHTML = "";
+                    fleetData.forEach(({ vehicle, year, cost, type }) => {
+                        tableBody.innerHTML += `
+                            <tr class="${rowColors[type] || 'table-secondary'}">
+                                <td>${vehicle}</td>
+                                <td class="fleet-year">${year}</td>
+                                <td>£${cost.toLocaleString()}</td>
+                            </tr>
+                        `;
+                    });
+                }
 
-        // Populate Fleet Transition Table with Color Coding
-        function generateFleetTable() {
-            let tableBody = document.getElementById("fleetTableBody");
-            tableBody.innerHTML = "";
-            fleetData.forEach(({ vehicle, year, cost, type }) => {
-                tableBody.innerHTML += `
-                    <tr class="${rowColors[type] || 'table-secondary'}">
-                        <td>${vehicle}</td>
-                        <td class="fleet-year">${year}</td>
-                        <td>£${cost.toLocaleString()}</td>
-                    </tr>
-                `;
-            });
-        }
+                function renderCharts() {
+                    const years = [2026, 2027, 2028, 2029, 2030];
+                    let cumulativeCost = 0;
+                    let yearlyCost = {};
+                    let cumulativeCostData = [];
 
-        function renderCharts() {
-            const years = [2026, 2027, 2028, 2029, 2030];
-            let cumulativeCost = 0;
-            let yearlyCost = {};
-            let cumulativeCostData = [];
+                    fleetData.forEach(({ year, cost }) => {
+                        yearlyCost[year] = (yearlyCost[year] || 0) + cost;
+                    });
 
-            fleetData.forEach(({ year, cost }) => {
-                yearlyCost[year] = (yearlyCost[year] || 0) + cost;
-            });
+                    years.forEach(year => {
+                        cumulativeCost += yearlyCost[year] || 0;
+                        cumulativeCostData.push({ year, cumulativeCost });
+                    });
 
-            years.forEach(year => {
-                cumulativeCost += yearlyCost[year] || 0;
-                cumulativeCostData.push({ year, cumulativeCost });
-            });
+                    const svg1 = d3.select("#cumulativeCostChart"),
+                        margin = { top: 50, right: 30, bottom: 50, left: 120 },
+                        width = +svg1.attr("width") - margin.left - margin.right,
+                        height = +svg1.attr("height") - margin.top - margin.bottom,
+                        g1 = svg1.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
-            // Render Cumulative Cost Chart
-            const svg1 = d3.select("#cumulativeCostChart"),
-                  margin = { top: 50, right: 30, bottom: 50, left: 120 },
-                  width = +svg1.attr("width") - margin.left - margin.right,
-                  height = +svg1.attr("height") - margin.top - margin.bottom,
-                  g1 = svg1.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+                    const x1 = d3.scaleLinear().domain([2026, 2030]).range([0, width]);
+                    const y1 = d3.scaleLinear().domain([0, d3.max(cumulativeCostData, d => d.cumulativeCost)]).range([height, 0]);
 
-            const x1 = d3.scaleLinear().domain([2026, 2030]).range([0, width]);
-            const y1 = d3.scaleLinear().domain([0, d3.max(cumulativeCostData, d => d.cumulativeCost)]).range([height, 0]);
+                    g1.append("path")
+                        .datum(cumulativeCostData)
+                        .attr("fill", "none")
+                        .attr("stroke", "red")
+                        .attr("stroke-width", 2)
+                        .attr("d", d3.line().x(d => x1(d.year)).y(d => y1(d.cumulativeCost)));
 
-            g1.append("path")
-                .datum(cumulativeCostData)
-                .attr("fill", "none")
-                .attr("stroke", "red")
-                .attr("stroke-width", 2)
-                .attr("d", d3.line().x(d => x1(d.year)).y(d => y1(d.cumulativeCost)));
+                    g1.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x1).tickFormat(d3.format("d")))
+                        .selectAll("text").style("font-size", "14px");
+                    g1.append("g").call(d3.axisLeft(y1).tickFormat(d => `£${d.toLocaleString()}`))
+                        .selectAll("text").style("font-size", "14px");
 
-            g1.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x1).tickFormat(d3.format("d")))
-                .selectAll("text").style("font-size", "14px");
-            g1.append("g").call(d3.axisLeft(y1).tickFormat(d => `£${d.toLocaleString()}`))
-                .selectAll("text").style("font-size", "14px");
+                    const svg2 = d3.select("#yearlySpendingChart"),
+                        g2 = svg2.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
-            // Render Yearly Spending Chart
-            const svg2 = d3.select("#yearlySpendingChart"),
-                  g2 = svg2.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+                    const x2 = d3.scaleBand().domain(years).range([0, width]).padding(0.3);
+                    const y2 = d3.scaleLinear().domain([0, d3.max(Object.values(yearlyCost))]).range([height, 0]);
 
-            const x2 = d3.scaleBand().domain(years).range([0, width]).padding(0.3);
-            const y2 = d3.scaleLinear().domain([0, d3.max(Object.values(yearlyCost))]).range([height, 0]);
+                    g2.selectAll(".bar")
+                        .data(years)
+                        .enter()
+                        .append("rect")
+                        .attr("x", d => x2(d))
+                        .attr("y", d => y2(yearlyCost[d] || 0))
+                        .attr("width", x2.bandwidth())
+                        .attr("height", d => height - y2(yearlyCost[d] || 0))
+                        .attr("fill", "blue");
 
-            g2.selectAll(".bar")
-                .data(years)
-                .enter()
-                .append("rect")
-                .attr("x", d => x2(d))
-                .attr("y", d => y2(yearlyCost[d] || 0))
-                .attr("width", x2.bandwidth())
-                .attr("height", d => height - y2(yearlyCost[d] || 0))
-                .attr("fill", "blue");
+                    g2.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x2).tickFormat(d3.format("d")))
+                        .selectAll("text").style("font-size", "14px");
+                    g2.append("g").call(d3.axisLeft(y2).tickFormat(d => `£${d.toLocaleString()}`))
+                        .selectAll("text").style("font-size", "14px");
+                }
 
-            g2.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x2).tickFormat(d3.format("d")))
-                .selectAll("text").style("font-size", "14px");
-            g2.append("g").call(d3.axisLeft(y2).tickFormat(d => `£${d.toLocaleString()}`))
-                .selectAll("text").style("font-size", "14px");
-        }
-
-        generateFleetTable();
-        renderCharts();
+                generateFleetTable();
+                renderCharts();
+            })
+            .catch(error => console.error('Error fetching fleet data:', error));
     </script>
 
 </body>

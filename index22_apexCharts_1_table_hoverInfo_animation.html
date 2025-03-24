@@ -30,7 +30,6 @@
 
     <h2 class="text-center mb-4">Fleet Transition Budget (2026-2030)</h2>
 
-    <!-- Fleet Transition Table -->
     <div class="table-responsive">
         <table class="table table-bordered fleet-table">
             <thead class="table-dark">
@@ -41,12 +40,10 @@
                 </tr>
             </thead>
             <tbody id="fleetTableBody">
-                <!-- Dynamic Data Will Be Inserted Here -->
             </tbody>
         </table>
     </div>
 
-    <!-- Charts Section -->
     <h3 class="text-center mt-5">Cumulative Cost Over Time</h3>
     <div class="chart-container">
         <div id="cumulativeCostChart" class="chart"></div>
@@ -58,102 +55,86 @@
     </div>
 
     <script>
-        // Fleet transition data
-        const fleetData = [
-            { vehicle: "Fire Appliance #1", year: 2026, cost: 350000, type: "fire" },
-            { vehicle: "Response Car #1", year: 2026, cost: 40000, type: "response" },
-            { vehicle: "Response Car #2", year: 2027, cost: 40000, type: "response" },
-            { vehicle: "Fire Appliance #2", year: 2027, cost: 350000, type: "fire" },
-            { vehicle: "Response Car #3", year: 2028, cost: 40000, type: "response" },
-            { vehicle: "Fire Appliance #3", year: 2028, cost: 350000, type: "fire" },
-            { vehicle: "Response Car #4", year: 2029, cost: 40000, type: "response" },
-            { vehicle: "Response Car #5", year: 2029, cost: 40000, type: "response" },
-            { vehicle: "Fire Appliance #4", year: 2029, cost: 350000, type: "fire" },
-            { vehicle: "Response Car #6", year: 2030, cost: 40000, type: "response" },
-            { vehicle: "Response Car #7", year: 2030, cost: 40000, type: "response" }
-        ];
+        fetch('fleetData.json')
+            .then(response => response.json())
+            .then(fleetData => {
+                const rowColors = { fire: "table-danger", response: "table-info" };
 
-        // Color mapping for table rows
-        const rowColors = { fire: "table-danger", response: "table-info" };
+                function generateFleetTable() {
+                    let tableBody = document.getElementById("fleetTableBody");
+                    tableBody.innerHTML = "";
+                    fleetData.forEach(({ vehicle, year, cost, type }) => {
+                        tableBody.innerHTML += `
+                            <tr class="${rowColors[type] || 'table-secondary'}">
+                                <td>${vehicle}</td>
+                                <td class="fleet-year">${year}</td>
+                                <td>£${cost.toLocaleString()}</td>
+                            </tr>
+                        `;
+                    });
+                }
 
-        // Populate Fleet Transition Table with Color Coding
-        function generateFleetTable() {
-            let tableBody = document.getElementById("fleetTableBody");
-            fleetData.forEach(({ vehicle, year, cost, type }) => {
-                tableBody.innerHTML += `
-                    <tr class="${rowColors[type] || 'table-secondary'}">
-                        <td>${vehicle}</td>
-                        <td class="fleet-year">${year}</td>
-                        <td>£${cost.toLocaleString()}</td>
-                    </tr>
-                `;
-            });
-        }
+                function prepareChartData() {
+                    let cumulativeCost = 0;
+                    let yearlyCost = {};
+                    let years = [];
+                    let cumulativeCostData = [];
+                    let yearlySpendingData = [];
 
-        // Prepare chart data
-        function prepareChartData() {
-            let cumulativeCost = 0;
-            let yearlyCost = {};
-            let years = [];
-            let cumulativeCostData = [];
-            let yearlySpendingData = [];
+                    fleetData.forEach(({ year, cost }) => {
+                        yearlyCost[year] = (yearlyCost[year] || 0) + cost;
+                    });
 
-            fleetData.forEach(({ year, cost }) => {
-                yearlyCost[year] = (yearlyCost[year] || 0) + cost;
-            });
+                    Object.keys(yearlyCost).map(Number).sort().forEach(year => {
+                        cumulativeCost += yearlyCost[year];
+                        years.push(year);
+                        cumulativeCostData.push(cumulativeCost);
+                        yearlySpendingData.push(yearlyCost[year]);
+                    });
 
-            Object.keys(yearlyCost).map(Number).sort().forEach(year => {
-                cumulativeCost += yearlyCost[year];
-                years.push(year);
-                cumulativeCostData.push(cumulativeCost);
-                yearlySpendingData.push(yearlyCost[year]);
-            });
+                    return { years, cumulativeCostData, yearlySpendingData };
+                }
 
-            return { years, cumulativeCostData, yearlySpendingData };
-        }
+                function renderCharts() {
+                    const { years, cumulativeCostData, yearlySpendingData } = prepareChartData();
 
-        // Render charts
-        function renderCharts() {
-            const { years, cumulativeCostData, yearlySpendingData } = prepareChartData();
+                    var optionsCumulative = {
+                        chart: { type: 'line', height: 500 },
+                        series: [{ name: "Cumulative Cost", data: cumulativeCostData }],
+                        xaxis: { 
+                            categories: years, 
+                            title: { text: 'Year', style: { fontSize: '16px', fontWeight: 'bold' } },
+                            labels: { style: { fontSize: '14px' } } 
+                        },
+                        yaxis: { 
+                            title: { text: 'Total Cost (£)', style: { fontSize: '16px', fontWeight: 'bold' } },
+                            labels: { formatter: value => `£${value.toLocaleString()}`, style: { fontSize: '14px' } }
+                        },
+                        colors: ['red']
+                    };
+                    new ApexCharts(document.querySelector("#cumulativeCostChart"), optionsCumulative).render();
 
-            // Cumulative Cost Chart
-            var optionsCumulative = {
-                chart: { type: 'line', height: 500 },
-                series: [{ name: "Cumulative Cost", data: cumulativeCostData }],
-                xaxis: { 
-                    categories: years, 
-                    title: { text: 'Year', style: { fontSize: '16px', fontWeight: 'bold' } },
-                    labels: { style: { fontSize: '14px' } } 
-                },
-                yaxis: { 
-                    title: { text: 'Total Cost (£)', style: { fontSize: '16px', fontWeight: 'bold' } },
-                    labels: { formatter: value => `£${value.toLocaleString()}`, style: { fontSize: '14px' } }
-                },
-                colors: ['red']
-            };
-            new ApexCharts(document.querySelector("#cumulativeCostChart"), optionsCumulative).render();
+                    var optionsYearly = {
+                        chart: { type: 'bar', height: 500 },
+                        series: [{ name: "Yearly Spending", data: yearlySpendingData }],
+                        xaxis: { 
+                            categories: years, 
+                            title: { text: 'Year', style: { fontSize: '16px', fontWeight: 'bold' } },
+                            labels: { style: { fontSize: '14px' } } 
+                        },
+                        yaxis: { 
+                            title: { text: 'Yearly Cost (£)', style: { fontSize: '16px', fontWeight: 'bold' } },
+                            labels: { formatter: value => `£${value.toLocaleString()}`, style: { fontSize: '14px' } }
+                        },
+                        colors: ['blue']
+                    };
+                    new ApexCharts(document.querySelector("#yearlySpendingChart"), optionsYearly).render();
+                }
 
-            // Yearly Spending Chart
-            var optionsYearly = {
-                chart: { type: 'bar', height: 500 },
-                series: [{ name: "Yearly Spending", data: yearlySpendingData }],
-                xaxis: { 
-                    categories: years, 
-                    title: { text: 'Year', style: { fontSize: '16px', fontWeight: 'bold' } },
-                    labels: { style: { fontSize: '14px' } } 
-                },
-                yaxis: { 
-                    title: { text: 'Yearly Cost (£)', style: { fontSize: '16px', fontWeight: 'bold' } },
-                    labels: { formatter: value => `£${value.toLocaleString()}`, style: { fontSize: '14px' } }
-                },
-                colors: ['blue']
-            };
-            new ApexCharts(document.querySelector("#yearlySpendingChart"), optionsYearly).render();
-        }
-
-        // Initialize the UI
-        generateFleetTable();
-        renderCharts();
+                generateFleetTable();
+                renderCharts();
+            })
+            .catch(error => console.error('Error fetching fleet data:', error));
     </script>
 
 </body>
