@@ -9,63 +9,69 @@
   <link href="./static/plugins/global/plugins.bundle.css" rel="stylesheet" />
   <link href="./static/css/style.bundle.css" rel="stylesheet" />
 
-  <!-- ApexCharts CDN -->
+  <!-- ApexCharts (only used for the bar chart for now) -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
   <style>
     .fleet-table th, .fleet-table td {
-        text-align: center;
-        vertical-align: middle;
+      text-align: center;
+      vertical-align: middle;
     }
     .fleet-year {
-        font-weight: bold;
-        background-color: #f8f9fa;
+      font-weight: bold;
+      background-color: #f8f9fa;
     }
     .chart-container {
-        width: 100%;
-        max-width: 900px;
-        margin: auto;
-        text-align: center;
+      width: 100%;
+      max-width: 900px;
+      margin: auto;
+      text-align: center;
     }
     .chart {
-        height: 500px;
+      height: 500px;
     }
   </style>
 </head>
 <body class="my-5">
-    <div class="container">
-  
-      <h2 class="text-center mb-5">Fleet Transition Budget (2026–2030)</h2>
-  
-      <!-- TABLE SECTION -->
-      <div class="table-responsive mb-5">
-        <table class="table table-bordered fleet-table">
-          <thead class="table-dark">
-            <tr>
-              <th>Vehicle</th>
-              <th>Transition Year</th>
-              <th>Cost (£)</th>
-            </tr>
-          </thead>
-          <tbody id="fleetTableBody">
-            <!-- Will be populated by JS -->
-          </tbody>
-        </table>
+  <div class="container">
+    <h2 class="text-center mb-5">Fleet Transition Budget (2026–2030)</h2>
+
+    <!-- TABLE -->
+    <div class="table-responsive mb-5">
+      <table class="table table-bordered fleet-table">
+        <thead class="table-dark">
+          <tr>
+            <th>Vehicle</th>
+            <th>Transition Year</th>
+            <th>Cost (£)</th>
+          </tr>
+        </thead>
+        <tbody id="fleetTableBody">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- CHART.JS: Cumulative Chart in Metronic Card -->
+    <div class="card mb-5">
+      <div class="card-header">
+        <h3 class="card-title">Cumulative Cost Over Time</h3>
       </div>
-  <!-- CHARTS -->
-  <h3 class="text-center">Cumulative Cost Over Time</h3>
-  <div class="chart-container">
-    <div id="cumulativeCostChart" class="chart"></div>
+      <div class="card-body">
+        <canvas id="kt_chart_cumulative" height="300"></canvas>
+      </div>
+    </div>
+
+    <!-- ApexCharts Bar Chart -->
+    <h3 class="text-center mt-5">Yearly Spending</h3>
+    <div class="chart-container">
+      <div id="yearlySpendingChart" class="chart"></div>
+    </div>
   </div>
 
-  <h3 class="text-center mt-5">Yearly Spending</h3>
-  <div class="chart-container">
-    <div id="yearlySpendingChart" class="chart"></div>
-  </div>
-
-  <!-- Data & Charts Script -->
+  <!-- Data + Charts -->
   <script>
-    fetch('./fleetData.json') // update path if needed
+    fetch('./fleetData.json')
       .then(response => response.json())
       .then(fleetData => {
         const rowColors = { fire: "table-danger", response: "table-info" };
@@ -82,9 +88,6 @@
               </tr>`;
           });
         }
-
-        console.log("Fleet data loaded:", fleetData);
-        console.log("Table rows generated:", document.querySelectorAll("#fleetTableBody tr").length);
 
         function prepareChartData() {
           let cumulativeCost = 0;
@@ -107,33 +110,60 @@
           return { years, cumulativeCostData, yearlySpendingData };
         }
 
-        function renderCharts() {
-          const { years, cumulativeCostData, yearlySpendingData } = prepareChartData();
-
-          new ApexCharts(document.querySelector("#cumulativeCostChart"), {
-            chart: { type: 'line', height: 500 },
-            series: [{ name: "Cumulative Cost", data: cumulativeCostData }],
-            xaxis: { 
-              categories: years, 
-              title: { text: 'Year', style: { fontSize: '16px', fontWeight: 'bold' } },
-              labels: { style: { fontSize: '14px' } } 
+        function renderChartJS(years, cumulativeCostData) {
+          const ctx = document.getElementById('kt_chart_cumulative').getContext('2d');
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: years,
+              datasets: [{
+                label: 'Cumulative Cost (£)',
+                data: cumulativeCostData,
+                borderColor: 'rgba(220,53,69,1)', // Bootstrap red
+                backgroundColor: 'rgba(220,53,69,0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: 'rgba(220,53,69,1)',
+                pointHoverRadius: 6,
+              }]
             },
-            yaxis: { 
-              title: { text: 'Total Cost (£)', style: { fontSize: '16px', fontWeight: 'bold' } },
-              labels: { formatter: val => `£${val.toLocaleString()}`, style: { fontSize: '14px' } }
-            },
-            colors: ['red']
-          }).render();
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: ctx => `£${ctx.parsed.y.toLocaleString()}`
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  title: { display: true, text: 'Year' }
+                },
+                y: {
+                  beginAtZero: true,
+                  title: { display: true, text: 'Total Cost (£)' },
+                  ticks: {
+                    callback: value => `£${value.toLocaleString()}`
+                  }
+                }
+              }
+            }
+          });
+        }
 
+        function renderApexBar(years, yearlySpendingData) {
           new ApexCharts(document.querySelector("#yearlySpendingChart"), {
             chart: { type: 'bar', height: 500 },
             series: [{ name: "Yearly Spending", data: yearlySpendingData }],
-            xaxis: { 
-              categories: years, 
+            xaxis: {
+              categories: years,
               title: { text: 'Year', style: { fontSize: '16px', fontWeight: 'bold' } },
-              labels: { style: { fontSize: '14px' } } 
+              labels: { style: { fontSize: '14px' } }
             },
-            yaxis: { 
+            yaxis: {
               title: { text: 'Yearly Cost (£)', style: { fontSize: '16px', fontWeight: 'bold' } },
               labels: { formatter: val => `£${val.toLocaleString()}`, style: { fontSize: '14px' } }
             },
@@ -142,7 +172,10 @@
         }
 
         generateFleetTable();
-        renderCharts();
+
+        const { years, cumulativeCostData, yearlySpendingData } = prepareChartData();
+        renderChartJS(years, cumulativeCostData);
+        renderApexBar(years, yearlySpendingData);
       })
       .catch(err => console.error("Error loading data:", err));
   </script>
@@ -150,6 +183,5 @@
   <!-- Metronic Core JS -->
   <script src="./static/plugins/global/plugins.bundle.js"></script>
   <script src="./static/js/scripts.bundle.js"></script>
-
 </body>
 </html>
