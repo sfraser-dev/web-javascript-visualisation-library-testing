@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,16 +81,6 @@
       border: 1px solid #ccc;
     }
 
-    .table-dark.dark-mode {
-      background-color: #2c2f33;
-      color: #fff;
-    }
-
-    .table-dark.light-mode {
-      background-color: #343a40;
-      color: #fff;
-    }
-
     canvas {
       width: 100% !important;
     }
@@ -133,6 +121,17 @@
     .theme-toggle-btn:hover {
       transform: scale(1.05);
     }
+
+    /* Custom table header styles */
+    body.light-mode .fleet-table-header {
+      background-color: #a8a5a5;
+      color: #000000;
+    }
+
+    body.dark-mode .fleet-table-header {
+      background-color: #2a2a2a;
+      color: #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -145,7 +144,7 @@
 
     <div class="table-responsive mb-5">
       <table class="table table-bordered fleet-table">
-        <thead class="table-dark">
+        <thead class="fleet-table-header">
           <tr>
             <th>Vehicle</th>
             <th>Transition Year</th>
@@ -187,9 +186,6 @@
         card.classList.remove("light-mode", "dark-mode");
         card.classList.add(`${theme}-mode`);
       });
-
-      document.querySelector(".table-dark").classList.remove("light-mode", "dark-mode");
-      document.querySelector(".table-dark").classList.add(`${theme}-mode`);
 
       document.querySelectorAll(".fleet-table tr").forEach(row => {
         row.classList.remove("light-mode", "dark-mode");
