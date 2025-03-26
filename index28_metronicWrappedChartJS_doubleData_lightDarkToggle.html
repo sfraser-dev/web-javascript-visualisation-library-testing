@@ -19,20 +19,13 @@
       color: #000000;
     }
 
+    .fleet-table {
+      text-align: center;
+    }
+
     .fleet-table th,
     .fleet-table td {
-      text-align: center;
       vertical-align: middle;
-    }
-
-    body.dark-mode .fleet-table th,
-    body.dark-mode .fleet-table td {
-      color: #f2f2f2;
-    }
-
-    body.light-mode .fleet-table th,
-    body.light-mode .fleet-table td {
-      color: #1a1a1a;
     }
 
     .fleet-year {
@@ -124,7 +117,7 @@
 
     /* Custom table header styles */
     body.light-mode .fleet-table-header {
-      background-color: #a8a5a5;
+      background-color: #e0e0e0;
       color: #000000;
     }
 
@@ -132,6 +125,21 @@
       background-color: #2a2a2a;
       color: #ffffff;
     }
+
+    /* Light mode table font color */
+    body.light-mode .fleet-table th,
+    body.light-mode .fleet-table td,
+    body.light-mode .fleet-table tr {
+      color: #1a1a1a;
+    }
+
+    /* Dark mode table font color */
+    body.dark-mode .fleet-table th,
+    body.dark-mode .fleet-table td,
+    body.dark-mode .fleet-table tr {
+      color: #f2f2f2;
+    }
+
   </style>
 </head>
 <body>
