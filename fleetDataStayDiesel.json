@@ -1,0 +1,13 @@
+[
+    { "vehicle": "Fire Appliance #1", "year": 2026, "cost": 370000, "type": "fire" },
+    { "vehicle": "Response Car #1", "year": 2026, "cost": 45000, "type": "response" },
+    { "vehicle": "Response Car #2", "year": 2027, "cost": 46000, "type": "response" },
+    { "vehicle": "Fire Appliance #2", "year": 2027, "cost": 380000, "type": "fire" },
+    { "vehicle": "Response Car #3", "year": 2028, "cost": 47000, "type": "response" },
+    { "vehicle": "Fire Appliance #3", "year": 2028, "cost": 390000, "type": "fire" },
+    { "vehicle": "Response Car #4", "year": 2029, "cost": 48000, "type": "response" },
+    { "vehicle": "Response Car #5", "year": 2029, "cost": 48000, "type": "response" },
+    { "vehicle": "Fire Appliance #4", "year": 2029, "cost": 400000, "type": "fire" },
+    { "vehicle": "Response Car #6", "year": 2030, "cost": 49000, "type": "response" },
+    { "vehicle": "Response Car #7", "year": 2030, "cost": 49000, "type": "response" }
+  ]
