@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Fleet Transition Budget</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="./static/plugins/global/plugins.bundle.css" rel="stylesheet" />
+  <link href="./static/css/style.bundle.css" rel="stylesheet" />
+
+  <style>
+    body.dark-mode {
+      background-color: #121212;
+      color: #ffffff;
+    }
+
+    body.light-mode {
+      background-color: #ffffff;
+      color: #000000;
+    }
+
+    .fleet-table th,
+    .fleet-table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .fleet-year {
+      font-weight: bold;
+    }
+
+    .fleet-table .row-fire.dark-mode {
+      background-color: #5e3ea1;
+      color: #fff;
+    }
+
+    .fleet-table .row-response.dark-mode {
+      background-color: #822c6c;
+      color: #fff;
+    }
+
+    .fleet-table .row-fire.light-mode {
+      background-color: #e0ccff;
+      color: #000;
+    }
+
+    .fleet-table .row-response.light-mode {
+      background-color: #f0b3d3;
+      color: #000;
+    }
+
+    .fleet-table .row-default.dark-mode {
+      background-color: #2a2a2a;
+      color: #fff;
+    }
+
+    .fleet-table .row-default.light-mode {
+      background-color: #f8f9fa;
+      color: #000;
+    }
+
+    .card.dark-mode {
+      background-color: #1e1e2d;
+      color: #fff;
+      border: 1px solid #333;
+    }
+
+    .card.light-mode {
+      background-color: #ffffff;
+      color: #000;
+      border: 1px solid #ccc;
+    }
+
+    .table-dark.dark-mode {
+      background-color: #2c2f33;
+      color: #fff;
+    }
+
+    .table-dark.light-mode {
+      background-color: #343a40;
+      color: #fff;
+    }
+
+    canvas {
+      width: 100% !important;
+    }
+
+    .card-title,
+    h2,
+    h3 {
+      color: inherit !important;
+    }
+
+    .theme-toggle-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .theme-toggle-btn {
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      border: 2px solid transparent;
+      transition: all 0.2s ease-in-out;
+    }
+
+    body.dark-mode .theme-toggle-btn {
+      background-color: #2c2f33;
+      color: #fff;
+      border-color: #888;
+    }
+
+    body.light-mode .theme-toggle-btn {
+      background-color: #ffffff;
+      color: #000;
+      border-color: #000;
+    }
+
+    .theme-toggle-btn:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="theme-toggle-wrapper">
+      <button class="theme-toggle-btn" id="themeToggle">Toggle Theme</button>
+    </div>
+
+    <h2 class="text-center my-5">Fleet Transition Budget (2026–2030)</h2>
+
+    <div class="table-responsive mb-5">
+      <table class="table table-bordered fleet-table">
+        <thead class="table-dark">
+          <tr>
+            <th>Vehicle</th>
+            <th>Transition Year</th>
+            <th>EV Cost (£)</th>
+            <th>Diesel Cost (£)</th>
+          </tr>
+        </thead>
+        <tbody id="fleetTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="card mb-5">
+      <div class="card-header">
+        <h3 class="card-title">Cumulative Cost Over Time</h3>
+      </div>
+      <div class="card-body">
+        <canvas id="kt_chart_cumulative" height="300"></canvas>
+      </div>
+    </div>
+
+    <div class="card mb-5">
+      <div class="card-header">
+        <h3 class="card-title">Yearly Spending Comparison</h3>
+      </div>
+      <div class="card-body">
+        <canvas id="kt_chart_yearly" height="300"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const root = document.body;
+
+    function applyTheme(theme) {
+      root.classList.remove("light-mode", "dark-mode");
+      root.classList.add(`${theme}-mode`);
+
+      document.querySelectorAll(".card").forEach(card => {
+        card.classList.remove("light-mode", "dark-mode");
+        card.classList.add(`${theme}-mode`);
+      });
+
+      document.querySelector(".table-dark").classList.remove("light-mode", "dark-mode");
+      document.querySelector(".table-dark").classList.add(`${theme}-mode`);
+
+      document.querySelectorAll(".fleet-table tr").forEach(row => {
+        row.classList.remove("light-mode", "dark-mode");
+        row.classList.add(`${theme}-mode`);
+      });
+
+      localStorage.setItem("theme", theme);
+    }
+
+    function toggleTheme() {
+      const current = root.classList.contains("dark-mode") ? "dark" : "light";
+      const next = current === "dark" ? "light" : "dark";
+      applyTheme(next);
+    }
+
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+    applyTheme(localStorage.getItem("theme") || "dark");
+
+    Promise.all([
+      fetch('./fleetData.json').then(res => res.json()),
+      fetch('./fleetDataStayDiesel.json').then(res => res.json())
+    ])
+    .then(([evData, dieselData]) => {
+      const rowColors = { fire: "row-fire", response: "row-response" };
+      const vehicleMap = {};
+
+      evData.forEach(({ vehicle, year, cost, type }) => {
+        vehicleMap[vehicle] = { vehicle, year, evCost: cost, dieselCost: null, type };
+      });
+
+      dieselData.forEach(({ vehicle, year, cost }) => {
+        if (!vehicleMap[vehicle]) {
+          vehicleMap[vehicle] = { vehicle, year, evCost: null, dieselCost: cost, type: 'default' };
+        } else {
+          vehicleMap[vehicle].dieselCost = cost;
+        }
+      });
+
+      function generateFleetTable() {
+        const tableBody = document.getElementById("fleetTableBody");
+        tableBody.innerHTML = "";
+
+        Object.values(vehicleMap).forEach(({ vehicle, year, evCost, dieselCost, type }) => {
+          const rowClass = rowColors[type] || 'row-default';
+          const mode = root.classList.contains('dark-mode') ? 'dark-mode' : 'light-mode';
+          tableBody.innerHTML += `
+            <tr class="${rowClass} ${mode}">
+              <td>${vehicle}</td>
+              <td class="fleet-year">${year}</td>
+              <td>${evCost ? '£' + evCost.toLocaleString() : '-'}</td>
+              <td>${dieselCost ? '£' + dieselCost.toLocaleString() : '-'}</td>
+            </tr>`;
+        });
+      }
+
+      function prepareChartData(data) {
+        const yearlyCost = {};
+        const cumulativeCostData = [];
+        const yearlySpendingData = [];
+        const years = [];
+
+        data.forEach(({ year, cost }) => {
+          yearlyCost[year] = (yearlyCost[year] || 0) + cost;
+        });
+
+        let cumulative = 0;
+        Object.keys(yearlyCost).map(Number).sort().forEach(year => {
+          cumulative += yearlyCost[year];
+          years.push(year);
+          cumulativeCostData.push(cumulative);
+          yearlySpendingData.push(yearlyCost[year]);
+        });
+
+        return { years, cumulativeCostData, yearlySpendingData };
+      }
+
+      function renderCumulativeChart(evChart, dieselChart, years) {
+        const ctx = document.getElementById('kt_chart_cumulative').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: years,
+            datasets: [
+              {
+                label: 'EV Cumulative (£)',
+                data: evChart.cumulativeCostData,
+                borderColor: 'rgba(94, 62, 161, 1)',
+                backgroundColor: 'rgba(94, 62, 161, 0.2)',
+                tension: 0.4,
+                fill: true
+              },
+              {
+                label: 'Diesel Cumulative (£)',
+                data: dieselChart.cumulativeCostData,
+                borderColor: 'rgba(220,53,69,1)',
+                backgroundColor: 'rgba(220,53,69,0.2)',
+                tension: 0.4,
+                fill: true
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { labels: { color: '#fff' } },
+              tooltip: {
+                backgroundColor: '#333',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                callbacks: {
+                  label: ctx => `£${ctx.parsed.y.toLocaleString()}`
+                }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: "#fff" },
+                title: { display: true, text: 'Year', color: "#fff" }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: "#fff",
+                  callback: value => `£${value.toLocaleString()}`
+                },
+                title: { display: true, text: 'Cumulative Cost (£)', color: "#fff" }
+              }
+            }
+          }
+        });
+      }
+
+      function renderYearlyChart(evChart, dieselChart, years) {
+        const ctx = document.getElementById('kt_chart_yearly').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: years,
+            datasets: [
+              {
+                label: 'EV (£)',
+                data: evChart.yearlySpendingData,
+                backgroundColor: 'rgba(94, 62, 161, 0.6)',
+                borderColor: 'rgba(94, 62, 161, 1)',
+                borderWidth: 1
+              },
+              {
+                label: 'Diesel (£)',
+                data: dieselChart.yearlySpendingData,
+                backgroundColor: 'rgba(220,53,69,0.6)',
+                borderColor: 'rgba(220,53,69,1)',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { labels: { color: '#fff' } },
+              tooltip: {
+                backgroundColor: '#333',
+                titleColor: '#fff',
+                bodyColor: '#fff',
+                callbacks: {
+                  label: ctx => `£${ctx.parsed.y.toLocaleString()}`
+                }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: "#fff" },
+                title: { display: true, text: 'Year', color: "#fff" }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: "#fff",
+                  callback: value => `£${value.toLocaleString()}`
+                },
+                title: { display: true, text: 'Spending (£)', color: "#fff" }
+              }
+            }
+          }
+        });
+      }
+
+      generateFleetTable();
+
+      const evChart = prepareChartData(evData);
+      const dieselChart = prepareChartData(dieselData);
+      renderCumulativeChart(evChart, dieselChart, evChart.years);
+      renderYearlyChart(evChart, dieselChart, evChart.years);
+    })
+    .catch(err => console.error("Error loading data:", err));
+  </script>
+
+  <script src="./static/plugins/global/plugins.bundle.js"></script>
+  <script src="./static/js/scripts.bundle.js"></script>
+</body>
+</html>
