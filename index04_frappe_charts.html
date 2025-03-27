@@ -1,63 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fleet Management Gantt Chart</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .gantt-container {
-            overflow-x: auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            background: #f8f9fa;
-        }
-        .chart-container {
-            width: 100%;
-            height: 200px;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body class="container mt-4">
-    <h2 class="mb-4 text-center">Fleet Management: Vehicle Replacements & Upgrades (2025-2030)</h2>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fleet Management Gantt Chart</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.min.js"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/frappe-gantt/0.5.0/frappe-gantt.css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            .gantt-container {
+                overflow-x: auto;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                background: #f8f9fa;
+            }
+            .chart-container {
+                width: 100%;
+                height: 200px;
+                margin-top: 20px;
+            }
+        </style>
+    </head>
+    <body class="container mt-4">
+        <h2 class="mb-4 text-center">
+            Fleet Management: Vehicle Replacements & Upgrades (2025-2030)
+        </h2>
 
-    <!-- Zoom Controls -->
-    <div class="text-center mb-3">
-        <button class="btn btn-primary me-2" onclick="changeView('Day')">Day</button>
-        <button class="btn btn-success me-2" onclick="changeView('Week')">Week</button>
-        <button class="btn btn-warning me-2" onclick="changeView('Month')">Month</button>
-        <button class="btn btn-danger" onclick="changeView('Year')">Year</button>
-    </div>
+        <!-- Zoom Controls -->
+        <div class="text-center mb-3">
+            <button class="btn btn-primary me-2" onclick="changeView('Day')">
+                Day
+            </button>
+            <button class="btn btn-success me-2" onclick="changeView('Week')">
+                Week
+            </button>
+            <button class="btn btn-warning me-2" onclick="changeView('Month')">
+                Month
+            </button>
+            <button class="btn btn-danger" onclick="changeView('Year')">
+                Year
+            </button>
+        </div>
 
-    <div class="gantt-container">
-        <svg id="gantt"></svg>
-    </div>
+        <div class="gantt-container">
+            <svg id="gantt"></svg>
+        </div>
 
-    <!-- Budget Chart -->
-    <canvas id="budgetChart" class="chart-container"></canvas>
+        <!-- Budget Chart -->
+        <canvas id="budgetChart" class="chart-container"></canvas>
 
-    <script>
-        // Fleet Management Data
-        let tasks = [
-            { name: "Fire Engine #1 - Replacement", start: "2025-06-01", end: "2025-12-15", id: "1", progress: 100, cost: 150000 },
-            { name: "Response Car #2 - Upgrade", start: "2026-03-01", end: "2026-06-30", id: "2", progress: 100, cost: 20000 },
-            { name: "Fire Engine #3 - Replacement", start: "2027-01-01", end: "2027-08-30", id: "3", progress: 80, cost: 145000 },
-            { name: "Fire Engine #4 - Upgrade", start: "2028-05-01", end: "2028-10-30", id: "4", progress: 60, cost: 35000 },
-            { name: "Response Car #5 - Replacement", start: "2029-02-01", end: "2029-07-30", id: "5", progress: 50, cost: 25000 },
-            { name: "Fire Engine Fleet - Major Overhaul", start: "2030-01-01", end: "2030-12-31", id: "6", progress: 30, cost: 500000 }
-        ];
+        <script>
+            // Fleet Management Data
+            let tasks = [
+                {
+                    name: "Fire Engine #1 - Replacement",
+                    start: "2025-06-01",
+                    end: "2025-12-15",
+                    id: "1",
+                    progress: 100,
+                    cost: 150000,
+                },
+                {
+                    name: "Response Car #2 - Upgrade",
+                    start: "2026-03-01",
+                    end: "2026-06-30",
+                    id: "2",
+                    progress: 100,
+                    cost: 20000,
+                },
+                {
+                    name: "Fire Engine #3 - Replacement",
+                    start: "2027-01-01",
+                    end: "2027-08-30",
+                    id: "3",
+                    progress: 80,
+                    cost: 145000,
+                },
+                {
+                    name: "Fire Engine #4 - Upgrade",
+                    start: "2028-05-01",
+                    end: "2028-10-30",
+                    id: "4",
+                    progress: 60,
+                    cost: 35000,
+                },
+                {
+                    name: "Response Car #5 - Replacement",
+                    start: "2029-02-01",
+                    end: "2029-07-30",
+                    id: "5",
+                    progress: 50,
+                    cost: 25000,
+                },
+                {
+                    name: "Fire Engine Fleet - Major Overhaul",
+                    start: "2030-01-01",
+                    end: "2030-12-31",
+                    id: "6",
+                    progress: 30,
+                    cost: 500000,
+                },
+            ];
 
-        // Initialize Gantt Chart
-        let gantt = new Gantt("#gantt", tasks, {
-            view_mode: "Year",
-            date_format: "YYYY-MM-DD",
-            custom_popup_html: function(task) {
-                return `
+            // Initialize Gantt Chart
+            let gantt = new Gantt("#gantt", tasks, {
+                view_mode: "Year",
+                date_format: "YYYY-MM-DD",
+                custom_popup_html: function (task) {
+                    return `
                     <div style="padding:10px; background:white; border-radius:5px;">
                         <h6>${task.name}</h6>
                         <p><strong>Start:</strong> ${task.start}</p>
@@ -66,69 +124,82 @@
                         <p><strong>Progress:</strong> ${task.progress}%</p>
                     </div>
                 `;
-            }
-        });
-
-        // Function to Change View Mode (Zoom In/Out)
-        function changeView(mode) {
-            gantt.change_view_mode(mode);
-        }
-
-        // Listen for progress changes and log updates
-        gantt.tasks.forEach(task => {
-            task.on_update = function(updatedTask) {
-                console.log(`Updated Task: ${updatedTask.name} - Progress: ${updatedTask.progress}%`);
-            };
-        });
-
-        // Calculate cumulative budget over time
-        function calculateBudgetOverTime() {
-            let sortedTasks = [...tasks].sort((a, b) => new Date(a.end) - new Date(b.end));
-            let labels = sortedTasks.map(task => task.end.substring(0, 4)); // Years
-            let costs = sortedTasks.map(task => task.cost);
-            let cumulativeCosts = [];
-            let total = 0;
-
-            costs.forEach(cost => {
-                total += cost;
-                cumulativeCosts.push(total);
-            });
-
-            return { labels, cumulativeCosts };
-        }
-
-        // Initialize Budget Chart
-        function renderBudgetChart() {
-            let { labels, cumulativeCosts } = calculateBudgetOverTime();
-            let ctx = document.getElementById("budgetChart").getContext("2d");
-            new Chart(ctx, {
-                type: "line",
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: "Cumulative Budget (£)",
-                        data: cumulativeCosts,
-                        borderColor: "red",
-                        borderWidth: 2,
-                        fill: false,
-                        pointRadius: 5,
-                        pointBackgroundColor: "red"
-                    }]
                 },
-                options: {
-                    responsive: true,
-                    scales: {
-                        x: { title: { display: true, text: "Year" } },
-                        y: { title: { display: true, text: "Budget (£)" }, beginAtZero: true }
-                    }
-                }
             });
-        }
 
-        // Render budget chart
-        renderBudgetChart();
-    </script>
+            // Function to Change View Mode (Zoom In/Out)
+            function changeView(mode) {
+                gantt.change_view_mode(mode);
+            }
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+            // Listen for progress changes and log updates
+            gantt.tasks.forEach((task) => {
+                task.on_update = function (updatedTask) {
+                    console.log(
+                        `Updated Task: ${updatedTask.name} - Progress: ${updatedTask.progress}%`
+                    );
+                };
+            });
+
+            // Calculate cumulative budget over time
+            function calculateBudgetOverTime() {
+                let sortedTasks = [...tasks].sort(
+                    (a, b) => new Date(a.end) - new Date(b.end)
+                );
+                let labels = sortedTasks.map((task) =>
+                    task.end.substring(0, 4)
+                ); // Years
+                let costs = sortedTasks.map((task) => task.cost);
+                let cumulativeCosts = [];
+                let total = 0;
+
+                costs.forEach((cost) => {
+                    total += cost;
+                    cumulativeCosts.push(total);
+                });
+
+                return { labels, cumulativeCosts };
+            }
+
+            // Initialize Budget Chart
+            function renderBudgetChart() {
+                let { labels, cumulativeCosts } = calculateBudgetOverTime();
+                let ctx = document
+                    .getElementById("budgetChart")
+                    .getContext("2d");
+                new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Cumulative Budget (£)",
+                                data: cumulativeCosts,
+                                borderColor: "red",
+                                borderWidth: 2,
+                                fill: false,
+                                pointRadius: 5,
+                                pointBackgroundColor: "red",
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { title: { display: true, text: "Year" } },
+                            y: {
+                                title: { display: true, text: "Budget (£)" },
+                                beginAtZero: true,
+                            },
+                        },
+                    },
+                });
+            }
+
+            // Render budget chart
+            renderBudgetChart();
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

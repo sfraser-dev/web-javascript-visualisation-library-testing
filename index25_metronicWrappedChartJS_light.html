@@ -1,205 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Met-ChartJS Light</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <head>
+        <meta charset="utf-8" />
+        <title>Met-ChartJS Light</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Metronic CSS -->
-  <link href="./static/plugins/global/plugins.bundle.css" rel="stylesheet" />
-  <link href="./static/css/style.bundle.css" rel="stylesheet" />
+        <!-- Metronic CSS -->
+        <link
+            href="./static/plugins/global/plugins.bundle.css"
+            rel="stylesheet"
+        />
+        <link href="./static/css/style.bundle.css" rel="stylesheet" />
 
-  <style>
-    .fleet-table th, .fleet-table td {
-      text-align: center;
-      vertical-align: middle;
-    }
-    .fleet-year {
-      font-weight: bold;
-      background-color: #f8f9fa;
-    }
-    canvas {
-      width: 100% !important;
-    }
-  </style>
-</head>
-<body class="my-5">
-  <div class="container">
-    <h2 class="text-center mb-5">Fleet Transition Budget (2026–2030)</h2>
+        <style>
+            .fleet-table th,
+            .fleet-table td {
+                text-align: center;
+                vertical-align: middle;
+            }
+            .fleet-year {
+                font-weight: bold;
+                background-color: #f8f9fa;
+            }
+            canvas {
+                width: 100% !important;
+            }
+        </style>
+    </head>
+    <body class="my-5">
+        <div class="container">
+            <h2 class="text-center mb-5">
+                Fleet Transition Budget (2026–2030)
+            </h2>
 
-    <!-- TABLE -->
-    <div class="table-responsive mb-5">
-      <table class="table table-bordered fleet-table">
-        <thead class="table-dark">
-          <tr>
-            <th>Vehicle</th>
-            <th>Transition Year</th>
-            <th>Cost (£)</th>
-          </tr>
-        </thead>
-        <tbody id="fleetTableBody">
-          <!-- Filled by JS -->
-        </tbody>
-      </table>
-    </div>
+            <!-- TABLE -->
+            <div class="table-responsive mb-5">
+                <table class="table table-bordered fleet-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Transition Year</th>
+                            <th>Cost (£)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fleetTableBody">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
 
-    <!-- CHART.JS: Cumulative Line Chart -->
-    <div class="card mb-5">
-      <div class="card-header">
-        <h3 class="card-title">Cumulative Cost Over Time</h3>
-      </div>
-      <div class="card-body">
-        <canvas id="kt_chart_cumulative" height="300"></canvas>
-      </div>
-    </div>
+            <!-- CHART.JS: Cumulative Line Chart -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">Cumulative Cost Over Time</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="kt_chart_cumulative" height="300"></canvas>
+                </div>
+            </div>
 
-    <!-- CHART.JS: Yearly Bar Chart -->
-    <div class="card mb-5">
-      <div class="card-header">
-        <h3 class="card-title">Yearly Spending</h3>
-      </div>
-      <div class="card-body">
-        <canvas id="kt_chart_yearly" height="300"></canvas>
-      </div>
-    </div>
-  </div>
+            <!-- CHART.JS: Yearly Bar Chart -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">Yearly Spending</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="kt_chart_yearly" height="300"></canvas>
+                </div>
+            </div>
+        </div>
 
-  <!-- Data + Charts -->
-  <script>
-    fetch('./fleetData.json')
-      .then(response => response.json())
-      .then(fleetData => {
-        const rowColors = { fire: "table-danger", response: "table-info" };
+        <!-- Data + Charts -->
+        <script>
+            fetch("./fleetData.json")
+                .then((response) => response.json())
+                .then((fleetData) => {
+                    const rowColors = {
+                        fire: "table-danger",
+                        response: "table-info",
+                    };
 
-        function generateFleetTable() {
-          const tableBody = document.getElementById("fleetTableBody");
-          tableBody.innerHTML = "";
-          fleetData.forEach(({ vehicle, year, cost, type }) => {
-            tableBody.innerHTML += `
-              <tr class="${rowColors[type] || 'table-secondary'}">
+                    function generateFleetTable() {
+                        const tableBody =
+                            document.getElementById("fleetTableBody");
+                        tableBody.innerHTML = "";
+                        fleetData.forEach(({ vehicle, year, cost, type }) => {
+                            tableBody.innerHTML += `
+              <tr class="${rowColors[type] || "table-secondary"}">
                 <td>${vehicle}</td>
                 <td class="fleet-year">${year}</td>
                 <td>£${cost.toLocaleString()}</td>
               </tr>`;
-          });
-        }
+                        });
+                    }
 
-        function prepareChartData() {
-          let cumulativeCost = 0;
-          const yearlyCost = {};
-          const years = [];
-          const cumulativeCostData = [];
-          const yearlySpendingData = [];
+                    function prepareChartData() {
+                        let cumulativeCost = 0;
+                        const yearlyCost = {};
+                        const years = [];
+                        const cumulativeCostData = [];
+                        const yearlySpendingData = [];
 
-          fleetData.forEach(({ year, cost }) => {
-            yearlyCost[year] = (yearlyCost[year] || 0) + cost;
-          });
+                        fleetData.forEach(({ year, cost }) => {
+                            yearlyCost[year] = (yearlyCost[year] || 0) + cost;
+                        });
 
-          Object.keys(yearlyCost).map(Number).sort().forEach(year => {
-            cumulativeCost += yearlyCost[year];
-            years.push(year);
-            cumulativeCostData.push(cumulativeCost);
-            yearlySpendingData.push(yearlyCost[year]);
-          });
+                        Object.keys(yearlyCost)
+                            .map(Number)
+                            .sort()
+                            .forEach((year) => {
+                                cumulativeCost += yearlyCost[year];
+                                years.push(year);
+                                cumulativeCostData.push(cumulativeCost);
+                                yearlySpendingData.push(yearlyCost[year]);
+                            });
 
-          return { years, cumulativeCostData, yearlySpendingData };
-        }
+                        return {
+                            years,
+                            cumulativeCostData,
+                            yearlySpendingData,
+                        };
+                    }
 
-        function renderCumulativeChart(years, cumulativeCostData) {
-          const ctx = document.getElementById('kt_chart_cumulative').getContext('2d');
-          new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: years,
-              datasets: [{
-                label: 'Cumulative Cost (£)',
-                data: cumulativeCostData,
-                borderColor: 'rgba(220,53,69,1)',
-                backgroundColor: 'rgba(220,53,69,0.1)',
-                tension: 0.4,
-                fill: true,
-                pointRadius: 4,
-                pointBackgroundColor: 'rgba(220,53,69,1)',
-                pointHoverRadius: 6,
-              }]
-            },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    label: ctx => `£${ctx.parsed.y.toLocaleString()}`
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  title: { display: true, text: 'Year' }
-                },
-                y: {
-                  beginAtZero: true,
-                  title: { display: true, text: 'Total Cost (£)' },
-                  ticks: {
-                    callback: value => `£${value.toLocaleString()}`
-                  }
-                }
-              }
-            }
-          });
-        }
+                    function renderCumulativeChart(years, cumulativeCostData) {
+                        const ctx = document
+                            .getElementById("kt_chart_cumulative")
+                            .getContext("2d");
+                        new Chart(ctx, {
+                            type: "line",
+                            data: {
+                                labels: years,
+                                datasets: [
+                                    {
+                                        label: "Cumulative Cost (£)",
+                                        data: cumulativeCostData,
+                                        borderColor: "rgba(220,53,69,1)",
+                                        backgroundColor: "rgba(220,53,69,0.1)",
+                                        tension: 0.4,
+                                        fill: true,
+                                        pointRadius: 4,
+                                        pointBackgroundColor:
+                                            "rgba(220,53,69,1)",
+                                        pointHoverRadius: 6,
+                                    },
+                                ],
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (ctx) =>
+                                                `£${ctx.parsed.y.toLocaleString()}`,
+                                        },
+                                    },
+                                },
+                                scales: {
+                                    x: {
+                                        title: { display: true, text: "Year" },
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                            text: "Total Cost (£)",
+                                        },
+                                        ticks: {
+                                            callback: (value) =>
+                                                `£${value.toLocaleString()}`,
+                                        },
+                                    },
+                                },
+                            },
+                        });
+                    }
 
-        function renderYearlyChart(years, yearlySpendingData) {
-          const ctx = document.getElementById('kt_chart_yearly').getContext('2d');
-          new Chart(ctx, {
-            type: 'bar',
-            data: {
-              labels: years,
-              datasets: [{
-                label: 'Yearly Spending (£)',
-                data: yearlySpendingData,
-                backgroundColor: 'rgba(13,110,253,0.5)',
-                borderColor: 'rgba(13,110,253,1)',
-                borderWidth: 1
-              }]
-            },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: { display: false },
-                tooltip: {
-                  callbacks: {
-                    label: ctx => `£${ctx.parsed.y.toLocaleString()}`
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  title: { display: true, text: 'Year' }
-                },
-                y: {
-                  beginAtZero: true,
-                  title: { display: true, text: 'Yearly Cost (£)' },
-                  ticks: {
-                    callback: value => `£${value.toLocaleString()}`
-                  }
-                }
-              }
-            }
-          });
-        }
+                    function renderYearlyChart(years, yearlySpendingData) {
+                        const ctx = document
+                            .getElementById("kt_chart_yearly")
+                            .getContext("2d");
+                        new Chart(ctx, {
+                            type: "bar",
+                            data: {
+                                labels: years,
+                                datasets: [
+                                    {
+                                        label: "Yearly Spending (£)",
+                                        data: yearlySpendingData,
+                                        backgroundColor: "rgba(13,110,253,0.5)",
+                                        borderColor: "rgba(13,110,253,1)",
+                                        borderWidth: 1,
+                                    },
+                                ],
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (ctx) =>
+                                                `£${ctx.parsed.y.toLocaleString()}`,
+                                        },
+                                    },
+                                },
+                                scales: {
+                                    x: {
+                                        title: { display: true, text: "Year" },
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                            text: "Yearly Cost (£)",
+                                        },
+                                        ticks: {
+                                            callback: (value) =>
+                                                `£${value.toLocaleString()}`,
+                                        },
+                                    },
+                                },
+                            },
+                        });
+                    }
 
-        generateFleetTable();
+                    generateFleetTable();
 
-        const { years, cumulativeCostData, yearlySpendingData } = prepareChartData();
-        renderCumulativeChart(years, cumulativeCostData);
-        renderYearlyChart(years, yearlySpendingData);
-      })
-      .catch(err => console.error("Error loading data:", err));
-  </script>
+                    const { years, cumulativeCostData, yearlySpendingData } =
+                        prepareChartData();
+                    renderCumulativeChart(years, cumulativeCostData);
+                    renderYearlyChart(years, yearlySpendingData);
+                })
+                .catch((err) => console.error("Error loading data:", err));
+        </script>
 
-  <!-- Metronic Core JS (includes Chart.js via plugins.bundle.js) -->
-  <script src="./static/plugins/global/plugins.bundle.js"></script>
-  <script src="./static/js/scripts.bundle.js"></script>
-</body>
+        <!-- Metronic Core JS (includes Chart.js via plugins.bundle.js) -->
+        <script src="./static/plugins/global/plugins.bundle.js"></script>
+        <script src="./static/js/scripts.bundle.js"></script>
+    </body>
 </html>

@@ -1,251 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Met-ChartJS Data2 Light</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <head>
+        <meta charset="utf-8" />
+        <title>Met-ChartJS Data2 Light</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Metronic CSS -->
-  <link href="./static/plugins/global/plugins.bundle.css" rel="stylesheet" />
-  <link href="./static/css/style.bundle.css" rel="stylesheet" />
+        <!-- Metronic CSS -->
+        <link
+            href="./static/plugins/global/plugins.bundle.css"
+            rel="stylesheet"
+        />
+        <link href="./static/css/style.bundle.css" rel="stylesheet" />
 
-  <style>
-    .fleet-table th, .fleet-table td {
-      text-align: center;
-      vertical-align: middle;
-    }
-    .fleet-year {
-      font-weight: bold;
-      background-color: #f8f9fa;
-    }
-    canvas {
-      width: 100% !important;
-    }
-  </style>
-</head>
-<body class="my-5">
-  <div class="container">
-    <h2 class="text-center mb-5">Fleet Transition Budget (2026–2030)</h2>
+        <style>
+            .fleet-table th,
+            .fleet-table td {
+                text-align: center;
+                vertical-align: middle;
+            }
+            .fleet-year {
+                font-weight: bold;
+                background-color: #f8f9fa;
+            }
+            canvas {
+                width: 100% !important;
+            }
+        </style>
+    </head>
+    <body class="my-5">
+        <div class="container">
+            <h2 class="text-center mb-5">
+                Fleet Transition Budget (2026–2030)
+            </h2>
 
-    <!-- TABLE -->
-    <div class="table-responsive mb-5">
-      <table class="table table-bordered fleet-table">
-        <thead class="table-dark">
-          <tr>
-            <th>Vehicle</th>
-            <th>Year</th>
-            <th>EV Cost (£)</th>
-            <th>Diesel Cost (£)</th>
-          </tr>
-        </thead>
-        <tbody id="fleetTableBody">
-          <!-- Filled by JS -->
-        </tbody>
-      </table>
-    </div>
+            <!-- TABLE -->
+            <div class="table-responsive mb-5">
+                <table class="table table-bordered fleet-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Vehicle</th>
+                            <th>Year</th>
+                            <th>EV Cost (£)</th>
+                            <th>Diesel Cost (£)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fleetTableBody">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
 
-    <!-- CHART.JS: Cumulative Line Chart -->
-    <div class="card mb-5">
-      <div class="card-header">
-        <h3 class="card-title">Cumulative Cost Over Time</h3>
-      </div>
-      <div class="card-body">
-        <canvas id="kt_chart_cumulative" height="300"></canvas>
-      </div>
-    </div>
+            <!-- CHART.JS: Cumulative Line Chart -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">Cumulative Cost Over Time</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="kt_chart_cumulative" height="300"></canvas>
+                </div>
+            </div>
 
-    <!-- CHART.JS: Yearly Bar Chart -->
-    <div class="card mb-5">
-      <div class="card-header">
-        <h3 class="card-title">Yearly Spending Comparison</h3>
-      </div>
-      <div class="card-body">
-        <canvas id="kt_chart_yearly" height="300"></canvas>
-      </div>
-    </div>
-  </div>
+            <!-- CHART.JS: Yearly Bar Chart -->
+            <div class="card mb-5">
+                <div class="card-header">
+                    <h3 class="card-title">Yearly Spending Comparison</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="kt_chart_yearly" height="300"></canvas>
+                </div>
+            </div>
+        </div>
 
-  <!-- Data + Charts -->
-  <script>
-    Promise.all([
-      fetch('./fleetData.json').then(res => res.json()),
-      fetch('./fleetDataStayDiesel.json').then(res => res.json())
-    ])
-    .then(([evData, dieselData]) => {
-      const rowColors = { fire: "table-danger", response: "table-info" };
+        <!-- Data + Charts -->
+        <script>
+            Promise.all([
+                fetch("./fleetData.json").then((res) => res.json()),
+                fetch("./fleetDataStayDiesel.json").then((res) => res.json()),
+            ])
+                .then(([evData, dieselData]) => {
+                    const rowColors = {
+                        fire: "table-danger",
+                        response: "table-info",
+                    };
 
-      // Merge EV and Diesel into a common structure
-      const vehicleMap = {};
+                    // Merge EV and Diesel into a common structure
+                    const vehicleMap = {};
 
-      evData.forEach(({ vehicle, year, cost, type }) => {
-        vehicleMap[vehicle] = { vehicle, year, evCost: cost, dieselCost: null, type };
-      });
+                    evData.forEach(({ vehicle, year, cost, type }) => {
+                        vehicleMap[vehicle] = {
+                            vehicle,
+                            year,
+                            evCost: cost,
+                            dieselCost: null,
+                            type,
+                        };
+                    });
 
-      dieselData.forEach(({ vehicle, year, cost }) => {
-        if (!vehicleMap[vehicle]) {
-          vehicleMap[vehicle] = { vehicle, year, evCost: null, dieselCost: cost };
-        } else {
-          vehicleMap[vehicle].dieselCost = cost;
-        }
-      });
+                    dieselData.forEach(({ vehicle, year, cost }) => {
+                        if (!vehicleMap[vehicle]) {
+                            vehicleMap[vehicle] = {
+                                vehicle,
+                                year,
+                                evCost: null,
+                                dieselCost: cost,
+                            };
+                        } else {
+                            vehicleMap[vehicle].dieselCost = cost;
+                        }
+                    });
 
-      // Table
-      function generateFleetTable() {
-        const tableBody = document.getElementById("fleetTableBody");
-        tableBody.innerHTML = "";
+                    // Table
+                    function generateFleetTable() {
+                        const tableBody =
+                            document.getElementById("fleetTableBody");
+                        tableBody.innerHTML = "";
 
-        Object.values(vehicleMap).forEach(({ vehicle, year, evCost, dieselCost, type }) => {
-          tableBody.innerHTML += `
-            <tr class="${rowColors[type] || 'table-secondary'}">
+                        Object.values(vehicleMap).forEach(
+                            ({ vehicle, year, evCost, dieselCost, type }) => {
+                                tableBody.innerHTML += `
+            <tr class="${rowColors[type] || "table-secondary"}">
               <td>${vehicle}</td>
               <td class="fleet-year">${year}</td>
-              <td>${evCost ? '£' + evCost.toLocaleString() : '-'}</td>
-              <td>${dieselCost ? '£' + dieselCost.toLocaleString() : '-'}</td>
+              <td>${evCost ? "£" + evCost.toLocaleString() : "-"}</td>
+              <td>${dieselCost ? "£" + dieselCost.toLocaleString() : "-"}</td>
             </tr>`;
-        });
-      }
+                            }
+                        );
+                    }
 
-      // Chart Data
-      function prepareChartData(data) {
-        const yearlyCost = {};
-        const cumulativeCostData = [];
-        const yearlySpendingData = [];
-        const years = [];
+                    // Chart Data
+                    function prepareChartData(data) {
+                        const yearlyCost = {};
+                        const cumulativeCostData = [];
+                        const yearlySpendingData = [];
+                        const years = [];
 
-        data.forEach(({ year, cost }) => {
-          yearlyCost[year] = (yearlyCost[year] || 0) + cost;
-        });
+                        data.forEach(({ year, cost }) => {
+                            yearlyCost[year] = (yearlyCost[year] || 0) + cost;
+                        });
 
-        let cumulative = 0;
-        Object.keys(yearlyCost).map(Number).sort().forEach(year => {
-          cumulative += yearlyCost[year];
-          years.push(year);
-          cumulativeCostData.push(cumulative);
-          yearlySpendingData.push(yearlyCost[year]);
-        });
+                        let cumulative = 0;
+                        Object.keys(yearlyCost)
+                            .map(Number)
+                            .sort()
+                            .forEach((year) => {
+                                cumulative += yearlyCost[year];
+                                years.push(year);
+                                cumulativeCostData.push(cumulative);
+                                yearlySpendingData.push(yearlyCost[year]);
+                            });
 
-        return { years, cumulativeCostData, yearlySpendingData };
-      }
+                        return {
+                            years,
+                            cumulativeCostData,
+                            yearlySpendingData,
+                        };
+                    }
 
-      // Render both EV and Diesel datasets
-      function renderCumulativeChart(evChart, dieselChart, years) {
-        const ctx = document.getElementById('kt_chart_cumulative').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: years,
-            datasets: [
-              {
-                label: 'EV Cumulative (£)',
-                data: evChart.cumulativeCostData,
-                borderColor: 'rgba(13,110,253,1)', // Blue
-                backgroundColor: 'rgba(13,110,253,0.1)',
-                tension: 0.4,
-                fill: true,
-                pointRadius: 4,
-                pointBackgroundColor: 'rgba(13,110,253,1)',
-                pointHoverRadius: 6,
-              },
-              {
-                label: 'Diesel Cumulative (£)',
-                data: dieselChart.cumulativeCostData,
-                borderColor: 'rgba(220,53,69,1)', // Red
-                backgroundColor: 'rgba(220,53,69,0.1)',
-                tension: 0.4,
-                fill: true,
-                pointRadius: 4,
-                pointBackgroundColor: 'rgba(220,53,69,1)',
-                pointHoverRadius: 6,
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  label: ctx => `£${ctx.parsed.y.toLocaleString()}`
-                }
-              }
-            },
-            scales: {
-              x: {
-                title: { display: true, text: 'Year' }
-              },
-              y: {
-                beginAtZero: true,
-                title: { display: true, text: 'Cumulative Cost (£)' },
-                ticks: {
-                  callback: value => `£${value.toLocaleString()}`
-                }
-              }
-            }
-          }
-        });
-      }
+                    // Render both EV and Diesel datasets
+                    function renderCumulativeChart(
+                        evChart,
+                        dieselChart,
+                        years
+                    ) {
+                        const ctx = document
+                            .getElementById("kt_chart_cumulative")
+                            .getContext("2d");
+                        new Chart(ctx, {
+                            type: "line",
+                            data: {
+                                labels: years,
+                                datasets: [
+                                    {
+                                        label: "EV Cumulative (£)",
+                                        data: evChart.cumulativeCostData,
+                                        borderColor: "rgba(13,110,253,1)", // Blue
+                                        backgroundColor: "rgba(13,110,253,0.1)",
+                                        tension: 0.4,
+                                        fill: true,
+                                        pointRadius: 4,
+                                        pointBackgroundColor:
+                                            "rgba(13,110,253,1)",
+                                        pointHoverRadius: 6,
+                                    },
+                                    {
+                                        label: "Diesel Cumulative (£)",
+                                        data: dieselChart.cumulativeCostData,
+                                        borderColor: "rgba(220,53,69,1)", // Red
+                                        backgroundColor: "rgba(220,53,69,0.1)",
+                                        tension: 0.4,
+                                        fill: true,
+                                        pointRadius: 4,
+                                        pointBackgroundColor:
+                                            "rgba(220,53,69,1)",
+                                        pointHoverRadius: 6,
+                                    },
+                                ],
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (ctx) =>
+                                                `£${ctx.parsed.y.toLocaleString()}`,
+                                        },
+                                    },
+                                },
+                                scales: {
+                                    x: {
+                                        title: { display: true, text: "Year" },
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                            text: "Cumulative Cost (£)",
+                                        },
+                                        ticks: {
+                                            callback: (value) =>
+                                                `£${value.toLocaleString()}`,
+                                        },
+                                    },
+                                },
+                            },
+                        });
+                    }
 
-      function renderYearlyChart(evChart, dieselChart, years) {
-        const ctx = document.getElementById('kt_chart_yearly').getContext('2d');
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: years,
-            datasets: [
-              {
-                label: 'EV (£)',
-                data: evChart.yearlySpendingData,
-                backgroundColor: 'rgba(13,110,253,0.6)', // Blue
-                borderColor: 'rgba(13,110,253,1)',
-                borderWidth: 1
-              },
-              {
-                label: 'Diesel (£)',
-                data: dieselChart.yearlySpendingData,
-                backgroundColor: 'rgba(220,53,69,0.6)', // Red
-                borderColor: 'rgba(220,53,69,1)',
-                borderWidth: 1
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  label: ctx => `£${ctx.parsed.y.toLocaleString()}`
-                }
-              }
-            },
-            scales: {
-              x: {
-                title: { display: true, text: 'Year' },
-                stacked: false
-              },
-              y: {
-                beginAtZero: true,
-                title: { display: true, text: 'Spending (£)' },
-                ticks: {
-                  callback: value => `£${value.toLocaleString()}`
-                },
-                stacked: false
-              }
-            }
-          }
-        });
-      }
+                    function renderYearlyChart(evChart, dieselChart, years) {
+                        const ctx = document
+                            .getElementById("kt_chart_yearly")
+                            .getContext("2d");
+                        new Chart(ctx, {
+                            type: "bar",
+                            data: {
+                                labels: years,
+                                datasets: [
+                                    {
+                                        label: "EV (£)",
+                                        data: evChart.yearlySpendingData,
+                                        backgroundColor: "rgba(13,110,253,0.6)", // Blue
+                                        borderColor: "rgba(13,110,253,1)",
+                                        borderWidth: 1,
+                                    },
+                                    {
+                                        label: "Diesel (£)",
+                                        data: dieselChart.yearlySpendingData,
+                                        backgroundColor: "rgba(220,53,69,0.6)", // Red
+                                        borderColor: "rgba(220,53,69,1)",
+                                        borderWidth: 1,
+                                    },
+                                ],
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (ctx) =>
+                                                `£${ctx.parsed.y.toLocaleString()}`,
+                                        },
+                                    },
+                                },
+                                scales: {
+                                    x: {
+                                        title: { display: true, text: "Year" },
+                                        stacked: false,
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                            text: "Spending (£)",
+                                        },
+                                        ticks: {
+                                            callback: (value) =>
+                                                `£${value.toLocaleString()}`,
+                                        },
+                                        stacked: false,
+                                    },
+                                },
+                            },
+                        });
+                    }
 
-      generateFleetTable();
+                    generateFleetTable();
 
-      const evChart = prepareChartData(evData);
-      const dieselChart = prepareChartData(dieselData);
-      renderCumulativeChart(evChart, dieselChart, evChart.years);
-      renderYearlyChart(evChart, dieselChart, evChart.years);
-    })
-    .catch(err => console.error("Error loading data:", err));
-  </script>
+                    const evChart = prepareChartData(evData);
+                    const dieselChart = prepareChartData(dieselData);
+                    renderCumulativeChart(evChart, dieselChart, evChart.years);
+                    renderYearlyChart(evChart, dieselChart, evChart.years);
+                })
+                .catch((err) => console.error("Error loading data:", err));
+        </script>
 
-  <!-- Metronic Core JS (includes Chart.js via plugins.bundle.js) -->
-  <script src="./static/plugins/global/plugins.bundle.js"></script>
-  <script src="./static/js/scripts.bundle.js"></script>
-</body>
+        <!-- Metronic Core JS (includes Chart.js via plugins.bundle.js) -->
+        <script src="./static/plugins/global/plugins.bundle.js"></script>
+        <script src="./static/js/scripts.bundle.js"></script>
+    </body>
 </html>

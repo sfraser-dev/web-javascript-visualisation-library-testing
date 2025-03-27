@@ -1,78 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bootstrap Gantt Chart</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .gantt-container {
-            max-width: 900px;
-            margin: auto;
-        }
-        .timeline {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            font-weight: bold;
-            padding: 10px 0;
-            border-bottom: 2px solid #ccc;
-        }
-        .gantt-row {
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-            padding: 5px 0;
-        }
-        .gantt-label {
-            width: 150px;
-            font-weight: bold;
-        }
-        .gantt-bar-container {
-            flex-grow: 1;
-            position: relative;
-        }
-        .gantt-bar {
-            position: absolute;
-            height: 30px;
-            background-color: steelblue;
-            border-radius: 5px;
-            text-align: center;
-            color: white;
-            padding: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container gantt-container">
-        <h3 class="text-center">Fleet Management Gantt Chart</h3>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bootstrap Gantt Chart</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <style>
+            .gantt-container {
+                max-width: 900px;
+                margin: auto;
+            }
+            .timeline {
+                display: flex;
+                justify-content: space-between;
+                font-size: 12px;
+                font-weight: bold;
+                padding: 10px 0;
+                border-bottom: 2px solid #ccc;
+            }
+            .gantt-row {
+                display: flex;
+                align-items: center;
+                border-bottom: 1px solid #ddd;
+                padding: 5px 0;
+            }
+            .gantt-label {
+                width: 150px;
+                font-weight: bold;
+            }
+            .gantt-bar-container {
+                flex-grow: 1;
+                position: relative;
+            }
+            .gantt-bar {
+                position: absolute;
+                height: 30px;
+                background-color: steelblue;
+                border-radius: 5px;
+                text-align: center;
+                color: white;
+                padding: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container gantt-container">
+            <h3 class="text-center">Fleet Management Gantt Chart</h3>
 
-        <!-- Timeline -->
-        <div class="timeline">
-            <span>2025</span> <span>2026</span> <span>2027</span> <span>2028</span> <span>2029</span> <span>2030</span>
-        </div>
+            <!-- Timeline -->
+            <div class="timeline">
+                <span>2025</span> <span>2026</span> <span>2027</span>
+                <span>2028</span> <span>2029</span> <span>2030</span>
+            </div>
 
-        <!-- Gantt Chart Rows -->
-        <div class="gantt-row">
-            <div class="gantt-label">🚒 Fire Engine #1</div>
-            <div class="gantt-bar-container">
-                <div class="gantt-bar" style="left: 10%; width: 30%;">Upgrade 2026-2027</div>
+            <!-- Gantt Chart Rows -->
+            <div class="gantt-row">
+                <div class="gantt-label">🚒 Fire Engine #1</div>
+                <div class="gantt-bar-container">
+                    <div class="gantt-bar" style="left: 10%; width: 30%">
+                        Upgrade 2026-2027
+                    </div>
+                </div>
+            </div>
+            <div class="gantt-row">
+                <div class="gantt-label">🚑 Response Car #2</div>
+                <div class="gantt-bar-container">
+                    <div
+                        class="gantt-bar bg-success"
+                        style="left: 20%; width: 40%"
+                    >
+                        Replacement 2027-2029
+                    </div>
+                </div>
+            </div>
+            <div class="gantt-row">
+                <div class="gantt-label">🚒 Fire Engine #3</div>
+                <div class="gantt-bar-container">
+                    <div
+                        class="gantt-bar bg-danger"
+                        style="left: 5%; width: 50%"
+                    >
+                        Maintenance 2025-2029
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="gantt-row">
-            <div class="gantt-label">🚑 Response Car #2</div>
-            <div class="gantt-bar-container">
-                <div class="gantt-bar bg-success" style="left: 20%; width: 40%;">Replacement 2027-2029</div>
-            </div>
-        </div>
-        <div class="gantt-row">
-            <div class="gantt-label">🚒 Fire Engine #3</div>
-            <div class="gantt-bar-container">
-                <div class="gantt-bar bg-danger" style="left: 5%; width: 50%;">Maintenance 2025-2029</div>
-            </div>
-        </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
 </html>

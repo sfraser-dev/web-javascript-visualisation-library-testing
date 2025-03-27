@@ -1,81 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fleet Management Gantt Chart</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <style>
-        .gantt-chart { overflow-x: auto; border: 1px solid #ddd; padding: 10px; }
-        .task-bar { stroke: black; }
-        .task-label { font-size: 14px; fill: black; }
-    </style>
-</head>
-<body>
-    <div class="container mt-4">
-        <h3>Fleet Transition Gantt Chart (2026-2030)</h3>
-        <div class="gantt-chart">
-            <svg id="gantt-chart-svg"></svg>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Fleet Management Gantt Chart</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <style>
+            .gantt-chart {
+                overflow-x: auto;
+                border: 1px solid #ddd;
+                padding: 10px;
+            }
+            .task-bar {
+                stroke: black;
+            }
+            .task-label {
+                font-size: 14px;
+                fill: black;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container mt-4">
+            <h3>Fleet Transition Gantt Chart (2026-2030)</h3>
+            <div class="gantt-chart">
+                <svg id="gantt-chart-svg"></svg>
+            </div>
         </div>
-    </div>
 
-    <script>
-        const vehicles = [
-            { name: "Fire Appliance #1", start: 2026, end: 2028, type: "EV", cost: 450000 },
-            { name: "Fire Appliance #2", start: 2027, end: 2029, type: "EV", cost: 450000 },
-            { name: "Fire Appliance #3", start: 2028, end: 2030, type: "EV", cost: 450000 },
-            { name: "Fire Appliance #4", start: 2029, end: 2030, type: "EV", cost: 450000 },
-            { name: "Response Car #1", start: 2026, end: 2027, type: "EV", cost: 50000 },
-            { name: "Response Car #2", start: 2026.5, end: 2027.5, type: "EV", cost: 50000 },
-            { name: "Response Car #3", start: 2027, end: 2028, type: "EV", cost: 50000 },
-            { name: "Response Car #4", start: 2027.5, end: 2028.5, type: "EV", cost: 50000 },
-            { name: "Response Car #5", start: 2028, end: 2029, type: "EV", cost: 50000 },
-            { name: "Response Car #6", start: 2028.5, end: 2029.5, type: "EV", cost: 50000 },
-            { name: "Response Car #7", start: 2029, end: 2030, type: "EV", cost: 50000 }
-        ];
+        <script>
+            const vehicles = [
+                {
+                    name: "Fire Appliance #1",
+                    start: 2026,
+                    end: 2028,
+                    type: "EV",
+                    cost: 450000,
+                },
+                {
+                    name: "Fire Appliance #2",
+                    start: 2027,
+                    end: 2029,
+                    type: "EV",
+                    cost: 450000,
+                },
+                {
+                    name: "Fire Appliance #3",
+                    start: 2028,
+                    end: 2030,
+                    type: "EV",
+                    cost: 450000,
+                },
+                {
+                    name: "Fire Appliance #4",
+                    start: 2029,
+                    end: 2030,
+                    type: "EV",
+                    cost: 450000,
+                },
+                {
+                    name: "Response Car #1",
+                    start: 2026,
+                    end: 2027,
+                    type: "EV",
+                    cost: 50000,
+                },
+                {
+                    name: "Response Car #2",
+                    start: 2026.5,
+                    end: 2027.5,
+                    type: "EV",
+                    cost: 50000,
+                },
+                {
+                    name: "Response Car #3",
+                    start: 2027,
+                    end: 2028,
+                    type: "EV",
+                    cost: 50000,
+                },
+                {
+                    name: "Response Car #4",
+                    start: 2027.5,
+                    end: 2028.5,
+                    type: "EV",
+                    cost: 50000,
+                },
+                {
+                    name: "Response Car #5",
+                    start: 2028,
+                    end: 2029,
+                    type: "EV",
+                    cost: 50000,
+                },
+                {
+                    name: "Response Car #6",
+                    start: 2028.5,
+                    end: 2029.5,
+                    type: "EV",
+                    cost: 50000,
+                },
+                {
+                    name: "Response Car #7",
+                    start: 2029,
+                    end: 2030,
+                    type: "EV",
+                    cost: 50000,
+                },
+            ];
 
-        const margin = { top: 50, right: 30, bottom: 50, left: 200 };
-        const width = 900 - margin.left - margin.right;
-        const height = vehicles.length * 40; 
+            const margin = { top: 50, right: 30, bottom: 50, left: 200 };
+            const width = 900 - margin.left - margin.right;
+            const height = vehicles.length * 40;
 
-        const xScale = d3.scaleLinear()
-            .domain([2026, 2030])
-            .range([0, width]);
+            const xScale = d3
+                .scaleLinear()
+                .domain([2026, 2030])
+                .range([0, width]);
 
-        const yScale = d3.scaleBand()
-            .domain(vehicles.map(d => d.name))
-            .range([0, height])
-            .padding(0.2);
+            const yScale = d3
+                .scaleBand()
+                .domain(vehicles.map((d) => d.name))
+                .range([0, height])
+                .padding(0.2);
 
-        const svg = d3.select("#gantt-chart-svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
+            const svg = d3
+                .select("#gantt-chart-svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        // X Axis
-        svg.append("g")
-            .attr("transform", `translate(0, ${height})`)
-            .call(d3.axisBottom(xScale).tickFormat(d3.format("d")));
+            // X Axis
+            svg.append("g")
+                .attr("transform", `translate(0, ${height})`)
+                .call(d3.axisBottom(xScale).tickFormat(d3.format("d")));
 
-        // Y Axis
-        svg.append("g")
-            .call(d3.axisLeft(yScale));
+            // Y Axis
+            svg.append("g").call(d3.axisLeft(yScale));
 
-        // Task Bars
-        svg.selectAll(".task-bar")
-            .data(vehicles)
-            .enter()
-            .append("rect")
-            .attr("x", d => xScale(d.start))
-            .attr("y", d => yScale(d.name))
-            .attr("width", d => xScale(d.end) - xScale(d.start))
-            .attr("height", yScale.bandwidth())
-            .attr("fill", d => d.type === "EV" ? "green" : "blue")
-            .attr("stroke", "black")
-            .append("title")
-            .text(d => `${d.name}: EV (£${d.cost.toLocaleString()})`);
-    </script>
-</body>
+            // Task Bars
+            svg.selectAll(".task-bar")
+                .data(vehicles)
+                .enter()
+                .append("rect")
+                .attr("x", (d) => xScale(d.start))
+                .attr("y", (d) => yScale(d.name))
+                .attr("width", (d) => xScale(d.end) - xScale(d.start))
+                .attr("height", yScale.bandwidth())
+                .attr("fill", (d) => (d.type === "EV" ? "green" : "blue"))
+                .attr("stroke", "black")
+                .append("title")
+                .text((d) => `${d.name}: EV (£${d.cost.toLocaleString()})`);
+        </script>
+    </body>
 </html>
