@@ -220,9 +220,10 @@
               legend1.data.push(series);
             }
 
-            const primary = getComputedStyle(document.body).getPropertyValue('--bs-primary').trim();
-            const danger = getComputedStyle(document.body).getPropertyValue('--bs-danger').trim();
-
+            //const primary = getComputedStyle(document.body).getPropertyValue('--bs-primary').trim();
+            const primary = am5.color(0x6495ED);
+            //const danger = getComputedStyle(document.body).getPropertyValue('--kt-success').trim();
+            const danger = am5.color(0xF28CA4);
             addLineSeries(root1, chart1, evChartData, "EV Cumulative", "cumulative", primary);
             addLineSeries(root1, chart1, dieselChartData, "Diesel Cumulative", "cumulative", danger);
 
